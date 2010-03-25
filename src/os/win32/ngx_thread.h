@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Igor Sysoev
+ * Copyright (C) Ngwsx
  */
 
 
@@ -17,73 +17,7 @@
 #define NGX_MAX_THREADS      128
 
 
-#if (NGX_WIN32)
 #include <ngx_win32_thread.h>
-
-
-#elif (NGX_USE_RFORK)
-#include <ngx_freebsd_rfork_thread.h>
-
-
-typedef void *  ngx_thread_value_t;
-typedef ngx_thread_value_t (*ngx_thread_func_pt)(void *arg);
-
-
-#else /* use pthreads */
-
-#include <pthread.h>
-
-typedef pthread_t                    ngx_tid_t;
-
-#define ngx_thread_self()            pthread_self()
-#define ngx_log_tid                  (int) ngx_thread_self()
-
-#if (NGX_FREEBSD) && !(NGX_LINUXTHREADS)
-#define NGX_TID_T_FMT                "%p"
-#else
-#define NGX_TID_T_FMT                "%d"
-#endif
-
-
-typedef pthread_key_t                ngx_tls_key_t;
-
-#define ngx_thread_key_create(key)   pthread_key_create(key, NULL)
-#define ngx_thread_key_create_n      "pthread_key_create()"
-#define ngx_thread_set_tls           pthread_setspecific
-#define ngx_thread_set_tls_n         "pthread_setspecific()"
-#define ngx_thread_get_tls           pthread_getspecific
-
-
-#define NGX_MUTEX_LIGHT     0
-
-typedef struct {
-    pthread_mutex_t   mutex;
-    ngx_log_t        *log;
-} ngx_mutex_t;
-
-typedef struct {
-    pthread_cond_t    cond;
-    ngx_log_t        *log;
-} ngx_cond_t;
-
-#define ngx_thread_sigmask     pthread_sigmask
-#define ngx_thread_sigmask_n  "pthread_sigmask()"
-
-#define ngx_thread_join(t, p)  pthread_join(t, p)
-
-#define ngx_setthrtitle(n)
-
-
-
-ngx_int_t ngx_mutex_trylock(ngx_mutex_t *m);
-void ngx_mutex_lock(ngx_mutex_t *m);
-void ngx_mutex_unlock(ngx_mutex_t *m);
-
-
-typedef void *  ngx_thread_value_t;
-typedef ngx_thread_value_t (*ngx_thread_func_pt)(void *arg);
-
-#endif
 
 
 #define ngx_thread_volatile   volatile

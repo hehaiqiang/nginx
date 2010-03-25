@@ -93,8 +93,6 @@
 
 #define NGX_HAVE_GNU_CRYPT_R         0
 
-#define NGX_HAVE_SETPROCTITLE        0
-
 #define NGX_HAVE_PERL_MULTIPLICITY   0
 
 #define NGX_PTR_SIZE                 4
@@ -108,7 +106,7 @@
 
 
 #define NGX_CONFIGURE                ""
-#define NGX_COMPILER                 "VC7.1 (Windows XP SP2)"
+#define NGX_COMPILER                 "VC8 (Windows XP SP3)"
 
 #define NGX_USER                     ""
 #define NGX_GROUP                    ""

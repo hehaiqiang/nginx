@@ -41,7 +41,7 @@ ngx_thread_key_create(ngx_tls_key_t *key)
 }
 
 #define ngx_thread_key_create_n      "TlsAlloc()"
-#define ngx_thread_set_tls(key, value)                                        \
+#define ngx_thread_set_tls(key, value)                                         \
     (TlsSetValue(key, value) ? 0 : ngx_errno)
 #define ngx_thread_set_tls_n         "TlsSetValue()"
 #define ngx_thread_get_tls(key)      TlsGetValue(key)
@@ -66,7 +66,7 @@ typedef struct {
 #define ngx_thread_sigmask
 #define ngx_thread_sigmask_n
 
-#define ngx_thread_join(t, p)                                                 \
+#define ngx_thread_join(t, p)                                                  \
     (WaitForSingleObject((t).handle, INFINITE) == WAIT_OBJECT_0 ? 0 : ngx_errno)
 
 #define ngx_setthrtitle(n)

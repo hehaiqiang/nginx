@@ -37,8 +37,6 @@ ngx_os_io_t  ngx_os_io = {
 LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
 
 
-#if !(NGX_WINCE)
-
 LPFN_ACCEPTEX              ngx_acceptex;
 LPFN_CONNECTEX             ngx_connectex;
 LPFN_DISCONNECTEX          ngx_disconnectex;
@@ -101,8 +99,6 @@ static struct {
     { {0,0,0,{0,0,0,0,0,0,0,0}}, 0, NULL, 0, 0, NULL }
 };
 
-#endif
-
 
 ngx_int_t
 ngx_os_init(ngx_log_t *log)
@@ -111,19 +107,13 @@ ngx_os_init(ngx_log_t *log)
     HKEY            hkey;
     long            rc;
     u_long          num_conn, len;
-#if !(NGX_WINCE)
     u_long          bytes;
     SOCKET          s;
-#endif
     WSADATA         wsadata;
-#if !(NGX_WINCE)
     u_short         port;
     ngx_err_t       err;
-#endif
     ngx_uint_t      n;
-#if !(NGX_WINCE)
     SOCKADDR_IN     sa;
-#endif
     SYSTEM_INFO     si = { 0 };
     OSVERSIONINFO   osvi;
 
@@ -170,9 +160,6 @@ ngx_os_init(ngx_log_t *log)
         WSACleanup();
         return NGX_ERROR;
     }
-
-
-#if !(NGX_WINCE)
 
     s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (s == INVALID_SOCKET) {
@@ -260,8 +247,6 @@ retry_bind:
 
     closesocket(s);
 
-#endif
-
 
     GetSystemInfo(&si);
 
@@ -329,7 +314,7 @@ retry_bind:
     }
 #endif
 
-    srand(ngx_time());
+    srand((unsigned int) ngx_time());
 
     return NGX_OK;
 }

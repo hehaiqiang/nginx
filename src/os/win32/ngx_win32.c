@@ -13,23 +13,8 @@ extern int main(int argc, char *const *argv);
 static void ngx_stdcall ngx_service_main(int argc, char **argv);
 
 
-#if (NGX_WINCE)
-char  **environ;
-int     timezone;
-#endif
-
-
-#if (NGX_WINCE)
-
-int WINAPI
-WinMain(HINSTANCE inst, HINSTANCE prev_inst, LPWSTR cmd_line, int cmd_show)
-
-#else
-
 int WINAPI
 WinMain(HINSTANCE inst, HINSTANCE prev_inst, LPSTR cmd_line, int cmd_show)
-
-#endif
 {
     /*
      * command line arguments:

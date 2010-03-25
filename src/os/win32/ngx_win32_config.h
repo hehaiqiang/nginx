@@ -18,6 +18,7 @@
 #define _WIN32_WINNT         0x0600  /* Windows Vista, Windows Server 2008 */
 #endif
 
+
 #define WIN32_LEAN_AND_MEAN
 
 #define FD_SETSIZE           64
@@ -30,37 +31,25 @@
 #include <commdlg.h>
 
 #include <winsock2.h>
-#if !(NGX_WINCE)
 #include <mswsock.h>
-#endif
 #include <ws2tcpip.h>
 
-#if !(NGX_WINCE)
 #include <sys/types.h>
 #include <sys/utime.h>
 #include <sys/stat.h>
-#endif
 
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
-#if !(NGX_WINCE)
 #include <errno.h>
 #include <io.h>
 #include <fcntl.h>
-#endif
 #include <limits.h>
 #include <time.h>
 
 
 #include <ngx_auto_config.h>
-
-
-#if (NGX_WINCE)
-#include <ngx_wince.h>
-#include <ngx_wince_time.h>
-#endif
 
 
 #define NGX_LISTEN_BACKLOG  SOMAXCONN
@@ -78,9 +67,6 @@
 #define S_IRUSR        0
 #define S_IWUSR        0
 #define S_IXUSR        0
-#if (NGX_WINCE)
-#define S_IWRITE       0000200
-#endif
 #define F_SETFD        0
 #define FD_CLOEXEC     0
 #define RLIMIT_NOFILE  0
@@ -90,25 +76,12 @@
 #define SHUT_WR        SD_SEND
 
 
-#if (NGX_WINCE)
-#define EACCES        ERROR_ACCESS_DENIED
-#define EPERM         ERROR_ACCESS_DENIED
-#define EXDEV         0
-#define ENOTDIR       ERROR_DIRECTORY
-#define ENAMETOOLONG  ERROR_FILENAME_EXCED_RANGE
-#define ENOSPC        ERROR_DISK_FULL
-#define EISDIR        0
-#endif
-
 #undef EAGAIN
 #define EAGAIN        WSAEWOULDBLOCK
 
 #undef EEXIST
 #define EEXIST        ERROR_ALREADY_EXISTS
-#if (NGX_WINCE)
-#define ENOENT        ERROR_FILE_NOT_FOUND
-#define EINTR         WSAEINTR
-#endif
+
 #define EINPROGRESS   WSAEINPROGRESS
 #define EADDRINUSE    WSAEADDRINUSE
 #define ECONNABORTED  WSAECONNABORTED
@@ -116,7 +89,9 @@
 #define ENOTCONN      WSAENOTCONN
 #define ETIMEDOUT     WSAETIMEDOUT
 #define ECONNREFUSED  WSAECONNREFUSED
-/* #define ENAMETOOLONG */
+#if 0
+#define ENAMETOOLONG
+#endif
 #define ENETDOWN      WSAENETDOWN
 #define ENETUNREACH   WSAENETUNREACH
 #define EHOSTDOWN     WSAEHOSTDOWN
@@ -125,22 +100,13 @@
 
 #define ngx_random    rand
 
-#define ioctl         ioctlsocket
 #define getpid        GetCurrentProcessId
 
 #define vsnprintf     _vsnprintf
-#if (NGX_WINCE)
-#define getenv(name)  NULL
-#endif
 
-#if 1
-#if (NGX_WINCE)
-typedef int           off_t;
-#endif
+
 typedef int           intptr_t;
 typedef unsigned int  uintptr_t;
-#endif
-
 typedef SSIZE_T       ssize_t;
 typedef INT32         int32_t;
 typedef UINT32        uint32_t;

@@ -8,11 +8,6 @@
 #define _NGX_AUTO_HEADERS_H_INCLUDED_
 
 
-#if (_WIN32_WCE)
-#define NGX_WINCE  1
-#endif
-
-
 #define NGX_WIN32  1
 
 

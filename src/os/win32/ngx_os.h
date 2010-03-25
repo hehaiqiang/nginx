@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Igor Sysoev
+ * Copyright (C) Ngwsx
  */
 
 
@@ -47,6 +47,7 @@ ssize_t ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size);
 ngx_chain_t *ngx_writev_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
 
+
 #if (NGX_HAVE_AIO)
 ssize_t ngx_aio_read(ngx_connection_t *c, u_char *buf, size_t size);
 ssize_t ngx_aio_read_chain(ngx_connection_t *c, ngx_chain_t *cl);
@@ -63,25 +64,7 @@ extern ngx_uint_t   ngx_inherited_nonblocking;
 extern ngx_uint_t   ngx_tcp_nodelay_and_tcp_nopush;
 
 
-#if (NGX_FREEBSD)
-#include <ngx_freebsd.h>
-
-
-#elif (NGX_LINUX)
-#include <ngx_linux.h>
-
-
-#elif (NGX_SOLARIS)
-#include <ngx_solaris.h>
-
-
-#elif (NGX_DARWIN)
-#include <ngx_darwin.h>
-
-
-#elif (NGX_WIN32)
 #include <ngx_win32.h>
-#endif
 
 
 #endif /* _NGX_OS_H_INCLUDED_ */

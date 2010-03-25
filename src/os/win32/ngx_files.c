@@ -74,89 +74,6 @@ ngx_open_file(const char *path, int mode, int create, int access)
 }
 
 
-#if (NGX_WINCE)
-
-ssize_t
-ngx_read_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
-{
-    off_t      new_offset;
-    ssize_t    n;
-    ngx_err_t  err;
-
-    ngx_log_debug4(NGX_LOG_DEBUG_CORE, file->log, 0,
-                   "ReadFile: %p, %p, %uz, %O", file->fd, buf, size, offset);
-
-    if (file->sys_offset != offset) {
-
-        new_offset = SetFilePointer(file->fd, offset, NULL, FILE_BEGIN);
-        err = ngx_errno;
-
-        if (new_offset == 0xFFFFFFFF && err != NO_ERROR) {
-            ngx_log_error(NGX_LOG_CRIT, file->log, err,
-                          "SetFilePointer() failed");
-            return NGX_ERROR;
-        }
-
-        file->sys_offset = new_offset;
-    }
-
-    if (ReadFile(file->fd, buf, (DWORD) size, (LPDWORD) &n, NULL) == 0) {
-        ngx_log_error(NGX_LOG_CRIT, file->log, ngx_errno,
-                      "ReadFile() failed");
-        return NGX_ERROR;
-    }
-
-    file->sys_offset += (off_t) n;
-    file->offset += (off_t) n;
-
-    return n;
-}
-
-
-ssize_t
-ngx_write_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
-{
-    off_t      new_offset;
-    ssize_t    n;
-    ngx_err_t  err;
-
-    ngx_log_debug4(NGX_LOG_DEBUG_CORE, file->log, 0,
-                   "WriteFile: %P, %p, %uz, %O", file->fd, buf, size, offset);
-
-    if (file->sys_offset != offset) {
-
-        new_offset = SetFilePointer(file->fd, offset, NULL, FILE_BEGIN);
-        err = ngx_errno;
-
-        if (new_offset == 0xFFFFFFFF && err != NO_ERROR) {
-            ngx_log_error(NGX_LOG_CRIT, file->log, err,
-                          "SetFilePointerEx() failed");
-            return NGX_ERROR;
-        }
-
-        file->sys_offset = new_offset;
-    }
-
-    if (WriteFile(file->fd, buf, (DWORD) size, (LPDWORD) &n, NULL) == 0) {
-        ngx_log_error(NGX_LOG_CRIT, file->log, ngx_errno,
-                      "WriteFile() failed");
-        return NGX_ERROR;
-    }
-
-    if (n != size) {
-        ngx_log_error(NGX_LOG_CRIT, file->log, 0,
-                      "WriteFile() has written only %z of %uz", n, size);
-        return NGX_ERROR;
-    }
-
-    file->sys_offset += (off_t) n;
-    file->offset += (off_t) n;
-
-    return n;
-}
-
-#else
-
 ssize_t
 ngx_read_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
 {
@@ -231,8 +148,6 @@ ngx_write_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
 
     return n;
 }
-
-#endif
 
 
 ngx_fd_t

@@ -10,7 +10,6 @@
 
 #include <ngx_config.h>
 #include <ngx_core.h>
-
 #include <ngx_dlfcn.h>
 #include <ngx_win32_service.h>
 
@@ -62,8 +61,6 @@ ngx_chain_t *ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
 
 
-#if !(NGX_WINCE)
-
 /*
  * AcceptEx,TransmitFile:
  *     NT,2000,XP,2003,Vista,2008
@@ -93,16 +90,13 @@ extern LPFN_DISCONNECTEX                 ngx_disconnectex;
 extern LPFN_TRANSMITFILE                 ngx_transmit_file;
 extern LPFN_TRANSMITPACKETS              ngx_transmit_packets;
 extern LPFN_GETACCEPTEXSOCKADDRS         ngx_get_acceptex_sockaddrs;
-
 extern LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
 
-#endif
 
+extern ngx_fd_t                          ngx_stderr_fileno;
+extern ngx_uint_t                        ngx_win32_ver;
 
-extern ngx_fd_t                   ngx_stderr_fileno;
-extern ngx_uint_t                 ngx_win32_ver;
-
-extern HINSTANCE                  ngx_inst;
+extern HINSTANCE                         ngx_inst;
 
 
 #endif /* _NGX_WIN32_H_INCLUDED_ */
