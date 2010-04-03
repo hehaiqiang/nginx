@@ -123,14 +123,22 @@ ngx_time_update(void)
 #elif (NGX_HAVE_GMTOFF)
 
     ngx_localtime(sec, &tm);
+#if !(NGX_WIN32)
     cached_gmtoff = (ngx_int_t) (tm.ngx_tm_gmtoff / 60);
     tp->gmtoff = cached_gmtoff;
+#else
+    tp->gmtoff = (ngx_int_t) (tm.ngx_tm_gmtoff / 60);
+#endif
 
 #else
 
     ngx_localtime(sec, &tm);
+#if !(NGX_WIN32)
     cached_gmtoff = ngx_timezone(tm.ngx_tm_isdst);
     tp->gmtoff = cached_gmtoff;
+#else
+    tp->gmtoff = ngx_timezone(tm.ngx_tm_isdst);
+#endif
 
 #endif
 
