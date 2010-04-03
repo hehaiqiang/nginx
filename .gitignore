@@ -1,0 +1,8 @@
+*.ilk
+*.log
+*.ncb
+*.pdb
+*.suo
+*.user
+build/vc8/Debug
+build/vc8/Release
