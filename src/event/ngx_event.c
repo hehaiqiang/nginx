@@ -460,7 +460,7 @@ ngx_event_module_init(ngx_cycle_t *cycle)
 
     ngx_timer_resolution = ccf->timer_resolution;
 
-#if !(NGX_WIN32) && !(NGX_SYMBIAN)
+#if !(NGX_WIN32)
     {
     ngx_int_t      limit;
     struct rlimit  rlmt;
@@ -484,7 +484,7 @@ ngx_event_module_init(ngx_cycle_t *cycle)
         }
     }
     }
-#endif /* !(NGX_WIN32) && !(NGX_SYMBIAN) */
+#endif /* !(NGX_WIN32) */
 
 
     if (ccf->master == 0) {
@@ -570,8 +570,6 @@ ngx_timer_signal_handler(int signo)
 {
     ngx_event_timer_alarm = 1;
 
-    ngx_time_update(0, 0);
-
 #if 1
     ngx_log_debug0(NGX_LOG_DEBUG_EVENT, ngx_cycle->log, 0, "timer signal");
 #endif
@@ -633,7 +631,7 @@ ngx_event_process_init(ngx_cycle_t *cycle)
         break;
     }
 
-#if !(NGX_WIN32) && !(NGX_SYMBIAN)
+#if !(NGX_WIN32)
 
     if (ngx_timer_resolution && !(ngx_event_flags & NGX_USE_TIMER_EVENT)) {
         struct sigaction  sa;
