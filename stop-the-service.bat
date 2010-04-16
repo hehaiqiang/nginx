@@ -1,0 +1,1 @@
+ngwsx.exe -e

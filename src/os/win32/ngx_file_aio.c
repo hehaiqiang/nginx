@@ -9,6 +9,9 @@
 #include <ngx_event.h>
 
 
+#if (NGX_HAVE_FILE_AIO)
+
+
 static void ngx_file_aio_event_handler(ngx_event_t *ev);
 
 
@@ -81,6 +84,8 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
     ovlp = (OVERLAPPED *) &ev->ovlp;
     ovlp->Offset = (DWORD) offset;
     ovlp->OffsetHigh = (DWORD) (((ULONGLONG) offset) >> 32);
+
+    /* ReadFileEx */
 
     rc = ReadFile(file->fd, buf, (DWORD) size, NULL, ovlp);
 
@@ -167,6 +172,8 @@ ngx_file_aio_write(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
     ovlp->Offset = (DWORD) offset;
     ovlp->OffsetHigh = (DWORD) (((ULONGLONG) offset) >> 32);
 
+    /* WriteFileEx */
+
     rc = WriteFile(file->fd, buf, (DWORD) size, NULL, ovlp);
 
     err = ngx_errno;
@@ -194,3 +201,6 @@ ngx_file_aio_event_handler(ngx_event_t *ev)
 
     aio->handler(ev);
 }
+
+
+#endif /* NGX_HAVE_FILE_AIO */

@@ -103,7 +103,11 @@ ngx_module_t  ngx_iocp_module = {
 };
 
 
+#if 0
 static ngx_str_t  ngx_iocp_local_addr_str = ngx_string("127.0.0.1");
+#else
+static ngx_str_t  ngx_iocp_local_addr_str = ngx_string("0.0.0.0");
+#endif
 
 ngx_addr_t        ngx_iocp_local_addr;
 
@@ -184,6 +188,8 @@ ngx_iocp_done(ngx_cycle_t *cycle)
 }
 
 
+#if (NGX_HAVE_FILE_AIO)
+
 ngx_int_t
 ngx_iocp_add_file(ngx_file_t *file)
 {
@@ -198,17 +204,20 @@ ngx_iocp_add_file(ngx_file_t *file)
     return NGX_OK;
 }
 
+#endif
+
 
 static ngx_int_t
 ngx_iocp_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 {
+#if 1
     ngx_connection_t  *c;
 
     c = ev->data;
 
-    if (flags == NGX_IOCP_ACCEPT) {
-        /* */
-    }
+    /* TODO: flags == NGX_IOCP_ACCEPT */
+
+    ev->ovlp.event = NULL;
 
     if (CreateIoCompletionPort((HANDLE) c->fd, iocp, (ULONG_PTR) c, 0) == NULL)
     {
@@ -216,19 +225,30 @@ ngx_iocp_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
     }
 
     return NGX_OK;
+#else
+    return NGX_ERROR;
+#endif
 }
 
 
 static ngx_int_t
 ngx_iocp_del_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 {
-    return NGX_OK;
+    return NGX_ERROR;
 }
 
 
 static ngx_int_t
 ngx_iocp_add_connection(ngx_connection_t *c)
 {
+    ngx_event_t  *rev, *wev;
+
+    rev = c->read;
+    wev = c->write;
+
+    rev->ovlp.event = rev;
+    wev->ovlp.event = wev;
+
     if (CreateIoCompletionPort((HANDLE) c->fd, iocp, (ULONG_PTR) c, 0) == NULL)
     {
         return NGX_ERROR;
@@ -287,8 +307,10 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
     err = ngx_errno;
 
     if (flags & NGX_UPDATE_TIME) {
-        ngx_time_update(0, 0);
+        ngx_time_update();
     }
+
+    /* TODO: err == ERROR_SEM_TIMEOUT */
 
     if (err == WAIT_TIMEOUT) {
         return NGX_OK;
@@ -311,7 +333,7 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
             ev->available = (int) n;
             ev->error = 0;
 
-            if (n == 0 && !ev->accept && !ev->write) {
+            if (n == 0 && !ev->accept && !ev->write && !ovlp->error) {
                 ev->eof = 1;
             } else {
                 ev->eof = 0;
@@ -370,7 +392,7 @@ ngx_iocp_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_iocp_conf_t *cpcf = conf;
 
     ngx_conf_init_uint_value(cpcf->events, 512);
-    ngx_conf_init_uint_value(cpcf->post_acceptex, 1);
+    ngx_conf_init_uint_value(cpcf->post_acceptex, 512);
     ngx_conf_init_value(cpcf->acceptex_read, 0);
     ngx_conf_init_uint_value(cpcf->concurrent_threads, 0);
 

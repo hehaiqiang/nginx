@@ -3,6 +3,11 @@
 *.ncb
 *.pdb
 *.suo
+*.swp
 *.user
+build/vc7/Debug
+build/vc7/Release
 build/vc8/Debug
 build/vc8/Release
+build/vc9/Debug
+build/vc9/Release

@@ -12,6 +12,133 @@
 #define NGX_IOVS  16
 
 
+#if 1
+
+ssize_t
+ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *chain)
+{
+    int             flags, rc;
+    u_char         *prev;
+    WSABUF         *buf, bufs[NGX_IOVS];
+    size_t          size;
+    ssize_t         n;
+    ngx_err_t       err;
+    ngx_array_t     vec;
+    ngx_event_t    *rev;
+    WSAOVERLAPPED  *ovlp;
+
+    rev = c->read;
+
+    if (rev->eof || rev->closed) {
+        return 0;
+    }
+
+    if (rev->error) {
+        return NGX_ERROR;
+    }
+
+    vec.nelts = 0;
+    vec.elts = bufs;
+    vec.size = sizeof(WSABUF);
+    vec.nalloc = NGX_IOVS;
+    vec.pool = c->pool;
+
+retry:
+
+    if (ngx_event_flags & NGX_USE_IOCP_EVENT && !rev->ovlp.error) {
+        ovlp = (WSAOVERLAPPED *) &rev->ovlp;
+
+        buf = ngx_array_push(&vec);
+        if (buf == NULL) {
+            return NGX_ERROR;
+        }
+
+        buf->buf = NULL;
+        buf->len = 0;
+
+    } else {
+        ovlp = NULL;
+
+        prev = NULL;
+        size = 0;
+
+        /* coalesce the neighbouring bufs */
+
+        while (chain && vec.nelts < NGX_IOVS) {
+
+            if (prev == chain->buf->last) {
+                buf->len += (DWORD) (chain->buf->end - chain->buf->last);
+
+            } else {
+                buf = ngx_array_push(&vec);
+                if (buf == NULL) {
+                    return NGX_ERROR;
+                }
+
+                buf->buf = chain->buf->last;
+                buf->len = (DWORD) (chain->buf->end - chain->buf->last);
+            }
+
+            size += (size_t) (chain->buf->end - chain->buf->last);
+            prev = chain->buf->end;
+            chain = chain->next;
+        }
+    }
+
+    n = 0;
+    flags = 0;
+
+    rc = WSARecv(c->fd, vec.elts, (DWORD) vec.nelts, (DWORD *) &n, &flags, ovlp,
+                 NULL);
+
+    err = ngx_socket_errno;
+
+    if (rc == 0) {
+        if (ovlp != NULL) {
+            rev->ovlp.error = 1;
+            rev->ready = 0;
+            return NGX_AGAIN;
+        }
+
+#if 0
+        if ((size_t) n < size) {
+            rev->ready = 0;
+        }
+#endif
+
+        if (n == 0) {
+            rev->eof = 1;
+        }
+
+        rev->ovlp.error = 0;
+
+        return n;
+    }
+
+    if (err == WSA_IO_PENDING) {
+        ngx_log_debug0(NGX_LOG_DEBUG_EVENT, c->log, err, "WSARecv() not ready");
+        rev->ovlp.error = 1;
+        rev->ready = 0;
+        return NGX_AGAIN;
+    }
+
+    if (err == WSAEWOULDBLOCK) {
+        ngx_log_debug0(NGX_LOG_DEBUG_EVENT, c->log, err, "WSARecv() not ready");
+        /* post another overlapped-io WSARecv() */
+        rev->ovlp.error = 0;
+        goto retry;
+    }
+
+    ngx_connection_error(c, err, "WSARecv() failed");
+
+    rev->ready = 0;
+    rev->error = 1;
+
+    return NGX_ERROR;
+}
+
+#else
+
 ssize_t
 ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *chain)
 {
@@ -127,3 +254,5 @@ ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *chain)
 
     return NGX_ERROR;
 }
+
+#endif

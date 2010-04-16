@@ -65,10 +65,18 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
         goto failed;
     }
 
-#if (NGX_HAVE_IOCP)
+#if (NGX_WIN32 && NGX_HAVE_IOCP)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
         if (pc->local == NULL) {
+#if 0
+            {
+            struct sockaddr_in  *sin;
+
+            sin = (struct sockaddr_in *) ngx_iocp_local_addr.sockaddr;
+            sin->sin_port = htons(61234);
+            }
+#endif
             pc->local = &ngx_iocp_local_addr;
         }
     }
@@ -136,8 +144,6 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 #if (NGX_WIN32 && NGX_HAVE_IOCP)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
-        wev->ovlp.event = wev;
-
         rc = ngx_connectex(s, pc->sockaddr, pc->socklen, NULL, 0, NULL,
                            (OVERLAPPED *) &wev->ovlp);
 

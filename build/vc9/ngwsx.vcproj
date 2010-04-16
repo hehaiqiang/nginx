@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="gb2312"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="ngwsx"
-	ProjectGUID="{1B4CD4FE-B5A5-4CBA-A94F-8385C3E97CAE}"
+	ProjectGUID="{DA97E9B5-A932-4041-BC4F-679CAB048297}"
+	RootNamespace="ngwsx"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
 		<Platform
@@ -16,11 +18,10 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="../../"
-			IntermediateDirectory="Debug"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -40,15 +41,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../src/core;../../src/event;../../src/event/modules;../../src/os/win32;../../src/http;../../src/http/modules;../../src/mail;../../src/dbd;../../src/dbd/libdrizzle;../../lib/pcre;../../lib/zlib"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/dbd;../../lib/libdrizzle;../../lib/libdrizzle/libdrizzle/win32;../../lib/pcre;../../lib/zlib"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				StructMemberAlignment="0"
+				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -62,12 +61,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib user32.lib advapi32.lib ws2_32.lib pcre.lib zlib.lib $(NOINHERIT)"
-				OutputFile="$(OutDir)/ngwsx.exe"
+				AdditionalDependencies="ws2_32.lib pcre.lib zlib.lib"
+				OutputFile="../../$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="../../lib/pcre;../../lib/zlib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/ngwsx.pdb"
 				SubSystem="2"
 				TargetMachine="1"
 			/>
@@ -90,19 +88,16 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="../../"
-			IntermediateDirectory="Release"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -121,14 +116,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="4"
-				FavorSizeOrSpeed="2"
-				AdditionalIncludeDirectories="../../src/core;../../src/event;../../src/event/modules;../../src/os;../../src/os/win32;../../src/http;../../src/http/modules;../../src/mail;../../lib/pcre;../../lib/zlib"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
-				RuntimeLibrary="0"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/dbd;../../lib/libdrizzle;../../lib/libdrizzle/libdrizzle/win32;../../lib/pcre;../../lib/zlib"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -142,8 +137,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib user32.lib advapi32.lib ws2_32.lib pcre.lib zlib.lib $(NOINHERIT)"
-				OutputFile="$(OutDir)/ngwsx.exe"
+				AdditionalDependencies="ws2_32.lib pcre.lib zlib.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="../../lib/pcre;../../lib/zlib"
 				GenerateDebugInformation="true"
@@ -171,9 +165,6 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -183,7 +174,7 @@
 	<Files>
 		<Filter
 			Name="sources"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<Filter
@@ -555,6 +546,30 @@
 				</Filter>
 			</Filter>
 			<Filter
+				Name="dbd"
+				>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd_core_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd_drizzle_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd_v1.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_http_dbd_module.c"
+					>
+				</File>
+			</Filter>
+			<Filter
 				Name="os"
 				>
 				<Filter
@@ -703,91 +718,75 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="dbd"
+				Name="lib"
 				>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd_core_module.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd_drizzle_module.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd_v1.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_http_dbd_module.c"
-					>
-				</File>
 				<Filter
 					Name="libdrizzle"
 					>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\column.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\column.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\command.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\command.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn_uds.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn_uds.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\drizzle.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\drizzle.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\field.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\field.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\handshake.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\handshake.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\my_sha1.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\pack.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\pack.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\query.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\poll.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\result.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\query.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\row.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\result.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\sha1.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\row.c"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\state.c"
 						>
 					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\sha1.c"
+					<Filter
+						Name="win32"
 						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\state.c"
-						>
-					</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\my_sha1.c"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\poll.c"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
@@ -932,10 +931,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\event\ngx_event_openssl.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\event\ngx_event_pipe.h"
 					>
 				</File>
@@ -1006,11 +1001,23 @@
 						RelativePath="..\..\src\http\modules\ngx_http_ssi_filter_module.h"
 						>
 					</File>
-					<File
-						RelativePath="..\..\src\http\modules\ngx_http_ssl_module.h"
-						>
-					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="dbd"
+				>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd_core_module.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\dbd\ngx_dbd_v1.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="os"
@@ -1131,187 +1138,175 @@
 					RelativePath="..\..\src\mail\ngx_mail_smtp_module.h"
 					>
 				</File>
-				<File
-					RelativePath="..\..\src\mail\ngx_mail_ssl_module.h"
-					>
-				</File>
 			</Filter>
 			<Filter
-				Name="dbd"
+				Name="lib"
 				>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd_core_module.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\dbd\ngx_dbd_v1.h"
-					>
-				</File>
 				<Filter
 					Name="libdrizzle"
 					>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\column.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\column.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\column_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\column_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\column_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\column_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\command_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\command_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\command_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\command_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\common.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\common.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\config-win.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\config.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn_local.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\conn_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn_local.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\constants.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\conn_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\drizzle.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\constants.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\drizzle_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\drizzle.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\drizzle_local.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\drizzle_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\drizzle_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\drizzle_local.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\field_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\drizzle_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\field_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\field_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\handshake_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\field_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\handshake_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\handshake_client.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\pack.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\handshake_server.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\query.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\m_string.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\result.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\my_attribute.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\result_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\my_dbug.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\result_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\my_global.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\row_client.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\my_sha1.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\row_server.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\pack.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\sha1.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\poll.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\state.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\query.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\structs.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\src\dbd\libdrizzle\result.h"
+						RelativePath="..\..\lib\libdrizzle\libdrizzle\visibility.h"
 						>
 					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\result_client.h"
+					<Filter
+						Name="win32"
 						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\result_server.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\row_client.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\row_server.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\sha1.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\state.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\structs.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\dbd\libdrizzle\visibility.h"
-						>
-					</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\config-win.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\config.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\m_string.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\my_attribute.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\my_dbug.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\my_global.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\my_sha1.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\lib\libdrizzle\libdrizzle\win32\poll.h"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="resources"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File

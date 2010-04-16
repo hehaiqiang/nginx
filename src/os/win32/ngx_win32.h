@@ -72,12 +72,18 @@ ngx_chain_t *ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in,
  *     Vista,2008
  */
 
+
+#if (_MSC_VER < 1500)
+
 typedef struct _OVERLAPPED_ENTRY {
     ULONG_PTR       lpCompletionKey;
     LPOVERLAPPED    lpOverlapped;
     ULONG_PTR       Internal;
     DWORD           dwNumberOfBytesTransferred;
 } OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;
+
+#endif
+
 
 typedef BOOL (WINAPI *LPFN_GETQUEUEDCOMPLETIONSTATUSEX)(HANDLE CompletionPort,
     LPOVERLAPPED_ENTRY lpCompletionPortEntries, ULONG ulCount,

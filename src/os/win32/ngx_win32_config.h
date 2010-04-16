@@ -21,9 +21,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#if 0
 #define FD_SETSIZE           64
-#endif
 
 
 #include <windows.h>
@@ -131,7 +129,11 @@ struct iovec {
 };
 
 
+#if (_MSC_VER < 1500)
+
 extern char  **environ;
+
+#endif
 
 
 #endif /* _NGX_WIN32_CONFIG_H_INCLUDED_ */

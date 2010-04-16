@@ -9,12 +9,27 @@
 #include <ngx_event.h>
 
 
+typedef struct {
+    ngx_event_t      ev;
+    ngx_socket_t     fd;
+#if 0
+    ngx_pool_t      *pool;
+    ngx_buf_t       *buffer;
+#endif
+    u_char           addr_buf[NGX_SOCKADDRLEN * 2 + 32];
+} ngx_acceptex_event_t;
+
+
+static ngx_int_t ngx_event_post_one_acceptex(ngx_listening_t *ls,
+    ngx_acceptex_event_t *aev);
 static void ngx_close_accepted_connection(ngx_connection_t *c);
 
 
 void
 ngx_event_acceptex(ngx_event_t *ev)
 {
+    ngx_acceptex_event_t *aev = (ngx_acceptex_event_t *) ev;
+
     u_char            *buf, *local_sa, *remote_sa;
     socklen_t          socklen, local_socklen, remote_socklen;
     ngx_log_t         *log;
@@ -26,20 +41,19 @@ ngx_event_acceptex(ngx_event_t *ev)
 
     ecf = ngx_event_get_conf(ngx_cycle->conf_ctx, ngx_event_core_module);
 
+    ev->ready = 0;
     lc = ev->data;
     ls = lc->listening;
-    ev->ready = 0;
+    buf = aev->addr_buf;
+    s = aev->fd;
 
-    buf = lc->buffer->start;
-    ngx_memcpy(&s, buf, sizeof(ngx_socket_t));
-    buf += sizeof(ngx_socket_t);
-
-    /* SO_UPDATE_ACCEPT_CONTEXT */
+    /* TODO: SO_UPDATE_ACCEPT_CONTEXT */
 
     socklen = NGX_SOCKADDRLEN + 16;
 
-    ngx_get_acceptex_sockaddrs(buf, (DWORD) ls->post_accept_buffer_size,
-                               socklen, socklen,
+    /* TODO: dwReceiveDataLength */
+
+    ngx_get_acceptex_sockaddrs(buf, 0, socklen, socklen,
                                (LPSOCKADDR *) &local_sa, &local_socklen,
                                (LPSOCKADDR *) &remote_sa, &remote_socklen);
 
@@ -223,61 +237,85 @@ ngx_event_acceptex(ngx_event_t *ev)
 
 post_acceptex:
 
-    ngx_event_post_acceptex(ls, 1);
+    ngx_event_post_one_acceptex(ls, aev);
 }
 
 
 ngx_int_t
 ngx_event_post_acceptex(ngx_listening_t *ls, ngx_uint_t n)
 {
+    ngx_uint_t             i;
+    ngx_event_t           *ls_rev, *rev;
+    ngx_acceptex_event_t  *events, *ev;
+
+    ls_rev = ls->connection->read;
+
+    events = ngx_alloc(sizeof(ngx_acceptex_event_t) * n, ngx_cycle->log);
+    if (events == NULL) {
+        return NGX_ERROR;
+    }
+
+    for (i = 0; i < n; i++) {
+        ev = &events[i];
+        rev = &ev->ev;
+
+        ngx_memcpy(rev, ls_rev, sizeof(ngx_event_t));
+
+        rev->ovlp.event = rev;
+
+        if (ngx_event_post_one_acceptex(ls, ev) != NGX_OK) {
+            return NGX_ERROR;
+        }
+    }
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_event_post_one_acceptex(ngx_listening_t *ls, ngx_acceptex_event_t *aev)
+{
     int                rc;
-    u_char            *buf;
-    size_t             size;
-    socklen_t          socklen;
     ngx_err_t          err;
+    socklen_t          socklen;
     ngx_event_t       *rev;
     ngx_socket_t       s;
     ngx_connection_t  *c;
 
     c = ls->connection;
-
-    socklen = NGX_SOCKADDRLEN + 16;
-
-    if (c->buffer == NULL) {
-        size = sizeof(ngx_socket_t) + ls->post_accept_buffer_size + socklen * 2;
-
-        c->pool = ngx_create_pool(size * 2, c->log);
-        if (c->pool == NULL) {
-            return NGX_ERROR;
-        }
-
-        c->buffer = ngx_create_temp_buf(c->pool, size);
-        if (c->buffer == NULL) {
-            return NGX_ERROR;
-        }
-    }
+    rev = &aev->ev;
 
     s = ngx_socket(ls->sockaddr->sa_family, ls->type, 0);
     if (s == -1) {
-        ngx_log_error(NGX_LOG_EMERG, c->log, ngx_socket_errno,
+        ngx_log_error(NGX_LOG_EMERG, ngx_cycle->log, ngx_socket_errno,
                       ngx_socket_n " failed");
         return NGX_ERROR;
     }
 
-    buf = c->buffer->start;
-    buf = ngx_cpymem(buf, &s, sizeof(ngx_socket_t));
+    if (ngx_nonblocking(s) == -1) {
+        ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_socket_errno,
+                      ngx_nonblocking_n " failed");
+        ngx_close_socket(s);
+        return NGX_ERROR;
+    }
 
-    rev = c->read;
-    rev->ovlp.event = rev;
+    socklen = NGX_SOCKADDRLEN + 16;
 
-    rc = ngx_acceptex(c->fd, s, buf, (DWORD) ls->post_accept_buffer_size,
-                      socklen, socklen, NULL, (LPOVERLAPPED) &rev->ovlp);
+    /* TODO: dwReceiveDataLength */
+
+    rc = ngx_acceptex(c->fd, s, aev->addr_buf, 0, socklen, socklen, NULL,
+                      (LPOVERLAPPED) &rev->ovlp);
 
     err = ngx_socket_errno;
 
-    if (rc != 0) {
-        return NGX_OK;
+    if (rc == 0 && err != WSA_IO_PENDING) {
+        ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, err,
+                      "ngx_acceptex() failed");
+        ngx_close_socket(s);
+        return NGX_ERROR;
     }
+
+    aev->fd = s;
 
     return NGX_OK;
 }
