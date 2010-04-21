@@ -21,7 +21,9 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#define FD_SETSIZE           64
+
+#undef FD_SETSIZE
+#define FD_SETSIZE           1024
 
 
 #include <windows.h>

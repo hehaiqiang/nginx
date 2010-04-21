@@ -1365,7 +1365,7 @@ ngx_cache_manager_process_handler(ngx_event_t *ev)
         next = 1;
     }
 
-    ngx_add_timer(ev, next * 1000);
+    ngx_add_timer(ev, (ngx_msec_t) (next * 1000));
 }
 
 
