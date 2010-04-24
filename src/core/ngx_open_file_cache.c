@@ -491,7 +491,13 @@ ngx_open_and_stat_file(u_char *name, ngx_open_file_info_t *of, ngx_log_t *log)
     }
 
     if (!of->log) {
-        mode = NGX_FILE_RDONLY;
+
+        /*
+         * Use non-blocking open() not to hang on FIFO files, etc.
+         * This flag has no effect on a regular files.
+         */
+
+        mode = NGX_FILE_RDONLY|NGX_FILE_NONBLOCK;
 
 #if (NGX_WIN32 && NGX_USE_IOCP)
         if (ngx_event_flags & NGX_USE_IOCP_EVENT) {

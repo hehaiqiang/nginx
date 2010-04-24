@@ -69,14 +69,6 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
         if (pc->local == NULL) {
-#if 0
-            {
-            struct sockaddr_in  *sin;
-
-            sin = (struct sockaddr_in *) ngx_iocp_local_addr.sockaddr;
-            sin->sin_port = htons(61234);
-            }
-#endif
             pc->local = &ngx_iocp_local_addr;
         }
     }
@@ -145,9 +137,7 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
         rc = ngx_connectex(s, pc->sockaddr, pc->socklen, NULL, 0, NULL,
-                           (OVERLAPPED *) &wev->ovlp);
-
-        rc = rc != 0 ? 0 : -1;
+                           (OVERLAPPED *) &wev->ovlp) != 0 ? 0 : -1;
 
     } else {
         rc = connect(s, pc->sockaddr, pc->socklen);
@@ -169,7 +159,6 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
             && err != NGX_EAGAIN
 #if (NGX_HAVE_IOCP)
             && err != WSA_IO_PENDING
-            && err != ERROR_IO_PENDING
 #endif
 #endif
             )

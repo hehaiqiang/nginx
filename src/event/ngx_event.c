@@ -242,7 +242,7 @@ ngx_process_events_and_timers(ngx_cycle_t *cycle)
 
 #if (NGX_WIN32)
 
-    if (ngx_run_as_service && timer == NGX_TIMER_INFINITE) {
+    if (ngx_run_as_service && (timer == NGX_TIMER_INFINITE || timer > 500)) {
         timer = 500;
     }
 

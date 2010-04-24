@@ -213,10 +213,7 @@ struct ngx_event_aio_s {
     off_t                      last_offset;
 #endif
 
-#if !(NGX_WIN32)
     ngx_aiocb_t                aiocb;
-#endif
-
     ngx_event_t                event;
 };
 

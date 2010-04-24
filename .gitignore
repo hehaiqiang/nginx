@@ -2,6 +2,7 @@
 *.log
 *.ncb
 *.pdb
+*.pid
 *.suo
 *.swp
 *.user

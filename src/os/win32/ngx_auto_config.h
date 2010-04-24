@@ -118,9 +118,9 @@
 #define NGX_ERROR_LOG_PATH           "logs\\error.log"
 #define NGX_PID_PATH                 "logs\\nginx.pid"
 #define NGX_HTTP_LOG_PATH            "logs\\access.log"
-#define NGX_HTTP_CLIENT_TEMP_PATH    "client_temp"
-#define NGX_HTTP_PROXY_TEMP_PATH     "proxy_temp"
-#define NGX_HTTP_FASTCGI_TEMP_PATH   "fastcgi_temp"
+#define NGX_HTTP_CLIENT_TEMP_PATH    "temp\\client_temp"
+#define NGX_HTTP_PROXY_TEMP_PATH     "temp\\proxy_temp"
+#define NGX_HTTP_FASTCGI_TEMP_PATH   "temp\\fastcgi_temp"
 
 
 #endif /* _NGX_AUTO_CONFIG_H_INCLUDED_ */

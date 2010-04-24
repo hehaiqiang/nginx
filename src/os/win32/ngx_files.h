@@ -59,7 +59,8 @@ ngx_fd_t ngx_open_file(const char *path, int mode, int create, int access);
 #define NGX_FILE_OPEN            0x02
 #define NGX_FILE_TRUNCATE        0x04
 #define NGX_FILE_APPEND          0x08
-#define NGX_FILE_OVERLAPPED      0x10
+#define NGX_FILE_NONBLOCK        0x10
+#define NGX_FILE_OVERLAPPED      0x20
 
 #define NGX_FILE_DEFAULT_ACCESS  0
 #define NGX_FILE_OWNER_ACCESS    0
@@ -165,6 +166,23 @@ ngx_fd_info(ngx_fd_t fd, ngx_file_info_t *sb)
     return 0;
 }
 #define ngx_fd_info_n            "GetFileInformationByHandle()"
+
+
+static ngx_inline int
+ngx_link_info(u_char *file, ngx_file_info_t *sb)
+{
+    if (GetFileAttributesEx((LPCSTR) file, GetFileExInfoStandard, &sb->attr)
+        == 0)
+    {
+        return NGX_FILE_ERROR;
+    }
+
+    sb->name = file;
+    sb->valid_attr = 1;
+
+    return 0;
+}
+#define ngx_link_info_n          "GetFileAttributesEx()"
 
 
 static ngx_inline int

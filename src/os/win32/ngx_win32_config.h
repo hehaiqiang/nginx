@@ -107,6 +107,9 @@
 #define vsnprintf     _vsnprintf
 
 
+typedef int           ngx_aiocb_t;
+
+
 typedef int           intptr_t;
 typedef unsigned int  uintptr_t;
 typedef SSIZE_T       ssize_t;

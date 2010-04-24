@@ -103,36 +103,23 @@ ngx_module_t  ngx_iocp_module = {
 };
 
 
-#if 0
-static ngx_str_t  ngx_iocp_local_addr_str = ngx_string("127.0.0.1");
-#else
-static ngx_str_t  ngx_iocp_local_addr_str = ngx_string("0.0.0.0");
-#endif
-
-ngx_addr_t        ngx_iocp_local_addr;
+static struct sockaddr_in  sa;
+ngx_addr_t                 ngx_iocp_local_addr;
 
 
 static ngx_int_t
 ngx_iocp_init(ngx_cycle_t *cycle, ngx_msec_t timer)
 {
-    ngx_int_t         rc;
     ngx_iocp_conf_t  *cpcf;
 
-    rc = ngx_parse_addr(cycle->pool, &ngx_iocp_local_addr,
-                        ngx_iocp_local_addr_str.data,
-                        ngx_iocp_local_addr_str.len);
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_port = htons(0);
 
-    switch (rc) {
-    case NGX_OK:
-        ngx_iocp_local_addr.name = ngx_iocp_local_addr_str;
-        break;
-
-    case NGX_DECLINED:
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
-                      "invalid address \"%V\"", &ngx_iocp_local_addr_str);
-    default:
-        return NGX_ERROR;
-    }
+    ngx_iocp_local_addr.sockaddr = (struct sockaddr *) &sa;
+    ngx_iocp_local_addr.socklen = sizeof(struct sockaddr_in);
+    ngx_iocp_local_addr.name.len = sizeof("INADDR_ANY") - 1;
+    ngx_iocp_local_addr.name.data = (u_char *) "INADDR_ANY";
 
     cpcf = ngx_event_get_conf(cycle->conf_ctx, ngx_iocp_module);
 
