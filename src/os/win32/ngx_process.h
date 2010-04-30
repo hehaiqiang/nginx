@@ -11,7 +11,7 @@
 #include <ngx_setproctitle.h>
 
 
-typedef pid_t       ngx_pid_t;
+typedef DWORD       ngx_pid_t;
 
 #define NGX_INVALID_PID  -1
 
@@ -51,7 +51,7 @@ typedef struct {
 #define NGX_PROCESS_DETACHED      -5
 
 
-#define ngx_getpid   getpid
+#define ngx_getpid   GetCurrentProcessId
 
 #ifndef ngx_log_pid
 #define ngx_log_pid  ngx_pid

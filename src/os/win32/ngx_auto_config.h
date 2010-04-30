@@ -97,16 +97,65 @@
 
 #define NGX_PTR_SIZE                 4
 
+
+typedef int               int32_t;
+typedef unsigned int      uint32_t;
+
+typedef __int64           int64_t;
+typedef unsigned __int64  uint64_t;
+
+#if (NGX_PTR_SIZE == 4)
+typedef int32_t           intptr_t;
+typedef uint32_t          uintptr_t;
+#else
+typedef int64_t           intptr_t;
+typedef uint64_t          uintptr_t;
+#endif
+
+#if 1
+typedef int32_t           off_t;
+typedef int32_t           _off_t;
+#else
+typedef int64_t           off_t;
+typedef int64_t           _off_t;
+#endif
+
+#if 1
+typedef uint32_t          size_t;
+typedef int32_t           ssize_t;
+#else
+typedef uint64_t          size_t;
+typedef int64_t           ssize_t;
+#endif
+
+#if 1
+typedef int32_t           time_t;
+#else
+typedef int64_t           time_t;
+#endif
+
+
 #define NGX_MAX_SIZE_T_VALUE         2147483647L
+
+#if 1
+#define NGX_MAX_OFF_T_VALUE          2147483647L
+#else
 #define NGX_MAX_OFF_T_VALUE          9223372036854775807LL
+#endif
 
 #define NGX_SIZE_T_LEN               (sizeof("-2147483648") - 1)
+
+#if 1
+#define NGX_OFF_T_LEN                (sizeof("-2147483648") - 1)
+#else
 #define NGX_OFF_T_LEN                (sizeof("-9223372036854775808") - 1)
+#endif
+
 #define NGX_TIME_T_LEN               (sizeof("-2147483648") - 1)
 
 
 #define NGX_CONFIGURE                ""
-#define NGX_COMPILER                 "VC8 (Windows XP SP3)"
+#define NGX_COMPILER                 "cl.exe"
 
 #define NGX_USER                     ""
 #define NGX_GROUP                    ""

@@ -47,7 +47,7 @@ retry:
         /* non-blocking io */
 
         wsabuf.buf = buf;
-        wsabuf.len = size;
+        wsabuf.len = (ULONG) size;
     }
 
     n = 0;

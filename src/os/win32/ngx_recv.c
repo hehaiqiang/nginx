@@ -43,7 +43,7 @@ retry:
         ovlp = NULL;
 
         wsabuf.buf = buf;
-        wsabuf.len = size;
+        wsabuf.len = (ULONG) size;
     }
 
     n = 0;

@@ -12,8 +12,8 @@
 #include <ngx_core.h>
 
 
-typedef uid_t  ngx_uid_t;
-typedef gid_t  ngx_gid_t;
+typedef PSID  ngx_uid_t;
+typedef PSID  ngx_gid_t;
 
 
 ngx_int_t ngx_crypt(ngx_pool_t *pool, u_char *key, u_char *salt,

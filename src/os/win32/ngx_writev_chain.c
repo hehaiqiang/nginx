@@ -93,7 +93,7 @@ retry:
             }
 
             if (prev == cl->buf->pos) {
-                buf->len += size;
+                buf->len += (ULONG) size;
 
             } else {
                 buf = ngx_array_push(&vec);
@@ -102,7 +102,7 @@ retry:
                 }
 
                 buf->buf = cl->buf->pos;
-                buf->len = size;
+                buf->len = (ULONG) size;
             }
 
             send += size;

@@ -133,7 +133,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
             }
 
             if (prev == cl->buf->pos) {
-                tpe->cLength += size;
+                tpe->cLength += (ULONG) size;
 
             } else {
                 tpe = ngx_array_push(&vec);
@@ -143,7 +143,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 
                 tpe->dwElFlags = TP_ELEMENT_MEMORY;
                 tpe->pBuffer = cl->buf->pos;
-                tpe->cLength = size;
+                tpe->cLength = (ULONG) size;
             }
 
             prev = cl->buf->pos + size;
@@ -166,7 +166,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
             }
 
             if (fd == cl->buf->file->fd && fprev == cl->buf->file_pos) {
-                tpe->cLength += size;
+                tpe->cLength += (ULONG) size;
 
             } else {
                 tpe = ngx_array_push(&vec);
@@ -184,7 +184,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
                 tpe->dwElFlags = TP_ELEMENT_FILE;
                 tpe->hFile = fd;
                 tpe->nFileOffset.QuadPart = cl->buf->file_pos;
-                tpe->cLength = size;
+                tpe->cLength = (ULONG) size;
             }
 
             fprev = cl->buf->file_pos + size;

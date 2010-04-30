@@ -8,6 +8,9 @@
 #define _NGX_WIN32_CONFIG_H_INCLUDED_
 
 
+#include <ngx_auto_config.h>
+
+
 #if (0)
 #define _WIN32_WINNT         0x0500  /* Windows 2000 */
 #elif (1)
@@ -26,6 +29,14 @@
 #define FD_SETSIZE           1024
 
 
+#define _USE_32BIT_TIME_T
+
+
+#define _OFF_T_DEFINED
+#define _SIZE_T_DEFINED
+#define _TIME_T_DEFINED
+
+
 #include <windows.h>
 #include <windowsx.h>
 #include <shlwapi.h>
@@ -37,8 +48,8 @@
 #include <ws2tcpip.h>
 
 #include <sys/types.h>
-#include <sys/utime.h>
 #include <sys/stat.h>
+#include <sys/utime.h>
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -49,9 +60,6 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <time.h>
-
-
-#include <ngx_auto_config.h>
 
 
 #define NGX_LISTEN_BACKLOG  SOMAXCONN
@@ -74,7 +82,9 @@
 #define RLIMIT_NOFILE  0
 #define SIGALRM        0
 #define ITIMER_REAL    0
+
 #define IOV_MAX        64
+
 #define SHUT_WR        SD_SEND
 
 
@@ -85,15 +95,18 @@
 #define EEXIST        ERROR_ALREADY_EXISTS
 
 #define EINPROGRESS   WSAEINPROGRESS
+
 #define EADDRINUSE    WSAEADDRINUSE
 #define ECONNABORTED  WSAECONNABORTED
 #define ECONNRESET    WSAECONNRESET
 #define ENOTCONN      WSAENOTCONN
 #define ETIMEDOUT     WSAETIMEDOUT
 #define ECONNREFUSED  WSAECONNREFUSED
+
 #if 0
 #define ENAMETOOLONG
 #endif
+
 #define ENETDOWN      WSAENETDOWN
 #define ENETUNREACH   WSAENETUNREACH
 #define EHOSTDOWN     WSAEHOSTDOWN
@@ -102,29 +115,16 @@
 
 #define ngx_random    rand
 
-#define getpid        GetCurrentProcessId
-
 #define vsnprintf     _vsnprintf
 
 
 typedef int           ngx_aiocb_t;
 
 
-typedef int           intptr_t;
-typedef unsigned int  uintptr_t;
-typedef SSIZE_T       ssize_t;
-typedef INT32         int32_t;
-typedef UINT32        uint32_t;
-typedef INT64         int64_t;
-typedef UINT64        uint64_t;
-
-typedef PSID          uid_t;
-typedef PSID          gid_t;
-typedef DWORD         pid_t;
 typedef int           rlim_t;
 typedef int           sig_atomic_t;
-typedef u_long        in_addr_t;
-typedef u_short       in_port_t;
+typedef uint32_t      in_addr_t;
+typedef unsigned short  in_port_t;
 typedef int           socklen_t;
 
 
