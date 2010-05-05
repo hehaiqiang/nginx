@@ -8,129 +8,184 @@
 #define _NGX_WIN32_CONFIG_H_INCLUDED_
 
 
-#include <ngx_auto_config.h>
+#define NGX_PTR_SIZE      4
+
+
+typedef int               int32_t;
+typedef unsigned int      uint32_t;
+
+typedef __int64           int64_t;
+typedef unsigned __int64  uint64_t;
+
+#if (NGX_PTR_SIZE == 4)
+typedef int32_t           intptr_t;
+typedef uint32_t          uintptr_t;
+#else
+typedef int64_t           intptr_t;
+typedef uint64_t          uintptr_t;
+#endif
+
+#if 1
+typedef int32_t           off_t;
+typedef int32_t           _off_t;
+#else
+typedef int64_t           off_t;
+typedef int64_t           _off_t;
+#endif
+
+#if 1
+typedef uint32_t          size_t;
+typedef int32_t           ssize_t;
+#else
+typedef uint64_t          size_t;
+typedef int64_t           ssize_t;
+#endif
+
+#if 1
+typedef int32_t           time_t;
+#else
+typedef int64_t           time_t;
+#endif
+
+
+#define _USE_32BIT_TIME_T
+
+#define _OFF_T_DEFINED
+#define _SIZE_T_DEFINED
+#define _TIME_T_DEFINED
+#define _INTPTR_T_DEFINED
+#define _UINTPTR_T_DEFINED
 
 
 #if (0)
-#define _WIN32_WINNT         0x0500  /* Windows 2000 */
+#define _WIN32_WINNT      0x0500  /* Windows 2000 */
 #elif (1)
-#define _WIN32_WINNT         0x0501  /* Windows XP */
+#define _WIN32_WINNT      0x0501  /* Windows XP */
 #elif (0)
-#define _WIN32_WINNT         0x0502  /* Windows Server 2003 */
+#define _WIN32_WINNT      0x0502  /* Windows Server 2003 */
 #else
-#define _WIN32_WINNT         0x0600  /* Windows Vista, Windows Server 2008 */
+#define _WIN32_WINNT      0x0600  /* Windows Vista, Windows Server 2008 */
 #endif
 
 
 #define WIN32_LEAN_AND_MEAN
 
 
-#undef FD_SETSIZE
-#define FD_SETSIZE           1024
-
-
-#define _USE_32BIT_TIME_T
-
-
-#define _OFF_T_DEFINED
-#define _SIZE_T_DEFINED
-#define _TIME_T_DEFINED
-
-
 #include <windows.h>
-#include <windowsx.h>
-#include <shlwapi.h>
-#include <commctrl.h>
-#include <commdlg.h>
-
 #include <winsock2.h>
 #include <mswsock.h>
-#include <ws2tcpip.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/utime.h>
 
 #include <stddef.h>
-#include <stdarg.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
-#include <io.h>
-#include <fcntl.h>
-#include <limits.h>
 #include <time.h>
 
 
-#define NGX_LISTEN_BACKLOG  SOMAXCONN
-
-#define NGX_CPU_CACHE_LINE  32
+#include <ngx_auto_config.h>
 
 
-#define ngx_inline      __inline
+#if 0
 
-#define ngx_stdcall     __stdcall
-#define ngx_cdecl       __cdecl
+#define NGX_HAVE_FILE_AIO            0
+
+#define NGX_HAVE_AIO_SENDFILE        0
+
+#define NGX_HAVE_FIONBIO             1
+
+#define NGX_HAVE_SENDFILE            0
+
+#define NGX_HAVE_GMTOFF              0
+
+#if (defined SO_ACCEPTFILTER && !defined NGX_HAVE_DEFERRED_ACCEPT)
+#define NGX_HAVE_DEFERRED_ACCEPT     1
+#elif (defined TCP_DEFER_ACCEPT && !defined NGX_HAVE_DEFERRED_ACCEPT)
+#define NGX_HAVE_DEFERRED_ACCEPT     1
+#elif (!defined NGX_HAVE_DEFERRED_ACCEPT)
+#define NGX_HAVE_DEFERRED_ACCEPT     0
+#endif
+
+/* setsockopt(SO_SNDLOWAT) returns ENOPROTOOPT */
+#define NGX_HAVE_SO_SNDLOWAT         0
+
+#define NGX_HAVE_INHERITED_NONBLOCK  0
+
+#define NGX_HAVE_LOCALTIME_R         0
+
+#define NGX_HAVE_STRERROR_R          0
+
+#define NGX_HAVE_GNU_CRYPT_R         0
+
+#define NGX_HAVE_PERL_MULTIPLICITY   0
+
+#endif
+
+
+#define NGX_HAVE_FIONBIO      1
+
+#define NGX_LISTEN_BACKLOG    SOMAXCONN
+
+
+#define NGX_MAX_SIZE_T_VALUE  2147483647L
+
+#if 1
+#define NGX_MAX_OFF_T_VALUE   2147483647L
+#else
+#define NGX_MAX_OFF_T_VALUE   9223372036854775807LL
+#endif
+
+#define NGX_SIZE_T_LEN        (sizeof("-2147483648") - 1)
+
+#if 1
+#define NGX_OFF_T_LEN         (sizeof("-2147483648") - 1)
+#else
+#define NGX_OFF_T_LEN         (sizeof("-9223372036854775808") - 1)
+#endif
+
+#define NGX_TIME_T_LEN        (sizeof("-2147483648") - 1)
+
+
+#define ngx_inline        __inline
+
+#define ngx_stdcall       __stdcall
+#define ngx_cdecl         __cdecl
 #define ngx_libc_cdecl
 
 
-#define S_IRUSR        0
-#define S_IWUSR        0
-#define S_IXUSR        0
-#define F_SETFD        0
-#define FD_CLOEXEC     0
-#define RLIMIT_NOFILE  0
-#define SIGALRM        0
-#define ITIMER_REAL    0
+#define S_IWRITE          0x01
 
-#define IOV_MAX        64
+#define S_IRUSR           0x10
+#define S_IWUSR           0x20
+#define S_IXUSR           0x40
 
-#define SHUT_WR        SD_SEND
+#define F_SETFD           0
+#define FD_CLOEXEC        0
+#define RLIMIT_NOFILE     0
+#define SIGALRM           0
+#define ITIMER_REAL       0
 
+#define IOV_MAX           64
 
-#undef EAGAIN
-#define EAGAIN        WSAEWOULDBLOCK
-
-#undef EEXIST
-#define EEXIST        ERROR_ALREADY_EXISTS
-
-#define EINPROGRESS   WSAEINPROGRESS
-
-#define EADDRINUSE    WSAEADDRINUSE
-#define ECONNABORTED  WSAECONNABORTED
-#define ECONNRESET    WSAECONNRESET
-#define ENOTCONN      WSAENOTCONN
-#define ETIMEDOUT     WSAETIMEDOUT
-#define ECONNREFUSED  WSAECONNREFUSED
-
-#if 0
-#define ENAMETOOLONG
-#endif
-
-#define ENETDOWN      WSAENETDOWN
-#define ENETUNREACH   WSAENETUNREACH
-#define EHOSTDOWN     WSAEHOSTDOWN
-#define EHOSTUNREACH  WSAEHOSTUNREACH
+#define SHUT_WR           SD_SEND
 
 
-#define ngx_random    rand
+#define ngx_random        rand
 
-#define vsnprintf     _vsnprintf
-
-
-typedef int           ngx_aiocb_t;
+#define vsnprintf         _vsnprintf
 
 
-typedef int           rlim_t;
-typedef int           sig_atomic_t;
-typedef uint32_t      in_addr_t;
-typedef unsigned short  in_port_t;
-typedef int           socklen_t;
+typedef int               ngx_aiocb_t;
+
+typedef unsigned char     u_char;
+
+typedef int               rlim_t;
+typedef int               sig_atomic_t;
+typedef uint32_t          in_addr_t;
+typedef unsigned short    in_port_t;
+typedef int               socklen_t;
 
 
 struct iovec {
-    u_long     iov_len;
-    char FAR  *iov_base;
+    unsigned long     iov_len;
+    char             *iov_base;
 };
 
 

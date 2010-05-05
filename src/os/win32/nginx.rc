@@ -7,4 +7,4 @@
 #include <ngx_res.h>
 
 
-IDI_NGWSX ICON DISCARDABLE  "ngwsx.ico"
+IDI_NGWSX ICON DISCARDABLE  "nginx.ico"

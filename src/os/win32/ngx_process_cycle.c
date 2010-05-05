@@ -7,7 +7,6 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <ngx_event.h>
-#include <ngx_channel.h>
 
 
 static void ngx_start_worker_processes(ngx_cycle_t *cycle, ngx_int_t n,
@@ -1299,6 +1298,7 @@ ngx_worker_thread_cycle(void *data)
 static void
 ngx_cache_manager_process_cycle(ngx_cycle_t *cycle, void *data)
 {
+#if 0
     ngx_cache_manager_ctx_t *ctx = data;
 
     void         *ident[4];
@@ -1337,12 +1337,14 @@ ngx_cache_manager_process_cycle(ngx_cycle_t *cycle, void *data)
 
         ngx_process_events_and_timers(cycle);
     }
+#endif
 }
 
 
 static void
 ngx_cache_manager_process_handler(ngx_event_t *ev)
 {
+#if 0
     time_t        next, n;
     ngx_uint_t    i;
     ngx_path_t  **path;
@@ -1366,12 +1368,14 @@ ngx_cache_manager_process_handler(ngx_event_t *ev)
     }
 
     ngx_add_timer(ev, (ngx_msec_t) (next * 1000));
+#endif
 }
 
 
 static void
 ngx_cache_loader_process_handler(ngx_event_t *ev)
 {
+#if 0
     ngx_uint_t     i;
     ngx_path_t   **path;
     ngx_cycle_t   *cycle;
@@ -1392,4 +1396,5 @@ ngx_cache_loader_process_handler(ngx_event_t *ev)
     }
 
     exit(0);
+#endif
 }

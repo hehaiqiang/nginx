@@ -113,7 +113,7 @@ ngx_iocp_init(ngx_cycle_t *cycle, ngx_msec_t timer)
     ngx_iocp_conf_t  *cpcf;
 
     sa.sin_family = AF_INET;
-    sa.sin_addr.s_addr = INADDR_ANY;
+    sa.sin_addr.s_addr = htonl(INADDR_ANY);
     sa.sin_port = htons(0);
 
     ngx_iocp_local_addr.sockaddr = (struct sockaddr *) &sa;

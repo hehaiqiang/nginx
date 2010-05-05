@@ -124,8 +124,12 @@ ngx_write_fd(ngx_fd_t fd, void *buf, size_t n)
 #define NGX_LINEFEED_SIZE        2
 
 
-#define ngx_rename_file(o, n)    (MoveFile(o, n) == 0 ? NGX_FILE_ERROR : 0)
+#define ngx_rename_file(o, n)                                                  \
+    (MoveFile((LPCSTR) o, (LPCSTR) n) == 0 ? NGX_FILE_ERROR : 0)
 #define ngx_rename_file_n        "MoveFile()"
+
+
+ngx_err_t ngx_win32_rename_file(ngx_str_t *src, ngx_str_t *to, ngx_log_t *log);
 
 
 int ngx_change_file_access(const char *n, int a);
@@ -245,9 +249,9 @@ ngx_file_uniq_t ngx_file_uniq(ngx_file_info_t *sb);
 
 #define ngx_realpath(p, r)       strcpy(r, p)
 #define ngx_realpath_n           "ngx_realpath()"
-#define ngx_getcwd(buf, size)    GetCurrentDirectory(size, buf)
+#define ngx_getcwd(buf, size)    GetCurrentDirectory(size, (LPSTR) buf)
 #define ngx_getcwd_n             "GetCurrentDirectory()"
-#define ngx_path_separator(c)    ((c) == '\\')
+#define ngx_path_separator(c)    ((c) == '/')
 
 #define NGX_MAX_PATH             MAX_PATH
 
@@ -320,15 +324,9 @@ ngx_err_t ngx_unlock_fd(ngx_fd_t fd);
 size_t ngx_fs_bsize(u_char *name);
 
 
-#if 0
 #define ngx_stderr               GetStdHandle(STD_ERROR_HANDLE)
 #define ngx_set_stderr(fd)       (SetStdHandle(STD_ERROR_HANDLE, fd) ? 0 : -1)
 #define ngx_set_stderr_n         "SetStdHandle(STD_ERROR_HANDLE)"
-#else
-#define ngx_stderr               0
-#define ngx_set_stderr(fd)       0
-#define ngx_set_stderr_n         ""
-#endif
 
 
 #if (NGX_HAVE_FILE_AIO)

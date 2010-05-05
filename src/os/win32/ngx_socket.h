@@ -24,8 +24,8 @@ typedef SOCKET  ngx_socket_t;
 int ngx_nonblocking(ngx_socket_t s);
 int ngx_blocking(ngx_socket_t s);
 
-#define ngx_nonblocking_n   "ioctl(FIONBIO)"
-#define ngx_blocking_n      "ioctl(!FIONBIO)"
+#define ngx_nonblocking_n   "ioctlsocket(FIONBIO)"
+#define ngx_blocking_n      "ioctlsocket(!FIONBIO)"
 
 #else
 

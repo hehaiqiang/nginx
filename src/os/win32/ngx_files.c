@@ -300,6 +300,19 @@ ngx_write_chain_to_file(ngx_file_t *file, ngx_chain_t *cl, off_t offset,
 }
 
 
+ngx_err_t
+ngx_win32_rename_file(ngx_str_t *src, ngx_str_t *to, ngx_log_t *log)
+{
+    if (MoveFileEx(src->data, to->data, MOVEFILE_REPLACE_EXISTING) == 0) {
+        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
+                      "MoveFileEx(\"%V\", \"%V\") failed", src, to);
+        return -1;
+    }
+
+    return 0;
+}
+
+
 int
 ngx_change_file_access(const char *n, int a)
 {

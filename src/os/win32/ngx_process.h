@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Igor Sysoev
+ * Copyright (C) Ngwsx
  */
 
 
@@ -8,12 +8,13 @@
 #define _NGX_PROCESS_H_INCLUDED_
 
 
-#include <ngx_setproctitle.h>
+typedef void (ngx_stdcall *ngx_service_main_pt)(int argc, char **argv);
 
 
-typedef DWORD       ngx_pid_t;
+typedef DWORD            ngx_pid_t;
 
-#define NGX_INVALID_PID  -1
+#define NGX_INVALID_PID  ((ngx_pid_t) -1)
+
 
 typedef void (*ngx_spawn_proc_pt) (ngx_cycle_t *cycle, void *data);
 
@@ -35,10 +36,10 @@ typedef struct {
 
 
 typedef struct {
-    char         *path;
-    char         *name;
-    char *const  *argv;
-    char *const  *envp;
+    char               *path;
+    char               *name;
+    char *const        *argv;
+    char *const        *envp;
 } ngx_exec_ctx_t;
 
 
@@ -53,9 +54,7 @@ typedef struct {
 
 #define ngx_getpid   GetCurrentProcessId
 
-#ifndef ngx_log_pid
 #define ngx_log_pid  ngx_pid
-#endif
 
 
 ngx_pid_t ngx_spawn_process(ngx_cycle_t *cycle,
@@ -65,22 +64,30 @@ ngx_int_t ngx_init_signals(ngx_log_t *log);
 void ngx_debug_point(void);
 
 
-#if (NGX_HAVE_SCHED_YIELD)
-#define ngx_sched_yield()  sched_yield()
-#else
 #define ngx_sched_yield()  Sleep(1 / 1000)  /* usleep(1) */
-#endif
 
 
-extern int            ngx_argc;
-extern char         **ngx_argv;
-extern char         **ngx_os_argv;
+ngx_int_t ngx_service(ngx_service_main_pt func);
+ngx_int_t ngx_set_service_handler(void);
+ngx_int_t ngx_set_service_running_status(void);
+ngx_int_t ngx_set_service_stopped_status(void);
+ngx_int_t ngx_install_service(void);
+ngx_int_t ngx_uninstall_service(void);
+ngx_int_t ngx_start_service(void);
+ngx_int_t ngx_stop_service(void);
 
-extern ngx_pid_t      ngx_pid;
-extern ngx_socket_t   ngx_channel;
-extern ngx_int_t      ngx_process_slot;
-extern ngx_int_t      ngx_last_process;
-extern ngx_process_t  ngx_processes[NGX_MAX_PROCESSES];
+
+extern int              ngx_argc;
+extern char           **ngx_argv;
+extern char           **ngx_os_argv;
+
+extern ngx_pid_t        ngx_pid;
+extern ngx_socket_t     ngx_channel;
+extern ngx_int_t        ngx_process_slot;
+extern ngx_int_t        ngx_last_process;
+extern ngx_process_t    ngx_processes[NGX_MAX_PROCESSES];
+
+extern ngx_uint_t       ngx_run_as_service;
 
 
 #endif /* _NGX_PROCESS_H_INCLUDED_ */

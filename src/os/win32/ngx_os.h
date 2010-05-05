@@ -12,6 +12,42 @@
 #include <ngx_core.h>
 
 
+/*
+ * Windows 7                 6.1  (601)
+ * Windows Server 2008 R2    6.1  (601)
+ * Windows Server 2008       6.0  (600)
+ * Windows Vista             6.0  (600)
+ * Windows Server 2003 R2    5.2  (502)
+ * Windows Server 2003       5.2  (502)
+ * Windows XP                5.1  (501)
+ * Windows 2000              5.0  (500)
+ * Windows Me                4.90 (490)
+ * Windows 98                4.10 (410)
+ * Windows NT 4.0            4.0  (400)
+ * Windows 95                4.0  (400)
+ * Windows CE
+ */
+
+/*
+ * AcceptEx,TransmitFile:
+ *     NT,2000,XP,2003,Vista,2008
+ * ConnectEx,DisconnectEx,TransmitPackets:
+ *     XP,Vista,2003,2008
+ * GetAcceptExSockaddrs:
+ *     95,98,Me,NT,2000,XP,2003,Vista,2008
+ * GetQueuedCompletionStatusEx:
+ *     Vista,2008
+ */
+
+
+#define NGX_WIN32_VER_601  601
+#define NGX_WIN32_VER_600  600
+#define NGX_WIN32_VER_502  502
+#define NGX_WIN32_VER_501  501
+#define NGX_WIN32_VER_500  500
+#define NGX_WIN32_VER_400  400
+
+
 #define NGX_IO_SENDFILE    1
 
 
@@ -31,13 +67,30 @@ typedef struct {
 } ngx_os_io_t;
 
 
-void ngx_debug_init(void);
+#if (_MSC_VER < 1500)
+
+typedef struct _OVERLAPPED_ENTRY {
+    ULONG_PTR     lpCompletionKey;
+    LPOVERLAPPED  lpOverlapped;
+    ULONG_PTR     Internal;
+    DWORD         dwNumberOfBytesTransferred;
+} OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;
+
+#endif
+
+typedef BOOL (WINAPI *LPFN_GETQUEUEDCOMPLETIONSTATUSEX)(HANDLE CompletionPort,
+    LPOVERLAPPED_ENTRY lpCompletionPortEntries, ULONG ulCount,
+    PULONG ulNumEntriesRemoved, DWORD dwMilliseconds, BOOL fAlertable);
+
+
 ngx_int_t ngx_os_init(ngx_log_t *log);
 void ngx_os_status(ngx_log_t *log);
-ngx_int_t ngx_os_specific_init(ngx_log_t *log);
-void ngx_os_specific_status(ngx_log_t *log);
-ngx_int_t ngx_daemon(ngx_log_t *log);
 ngx_int_t ngx_os_signal_process(ngx_cycle_t *cycle, char *sig, ngx_int_t pid);
+
+
+void ngx_event_log(ngx_err_t err, const char *fmt, ...);
+ngx_int_t ngx_message_box(u_char *caption, ngx_uint_t type, ngx_err_t err,
+    const char *fmt, ...);
 
 
 ssize_t ngx_win32_recv(ngx_connection_t *c, u_char *buf, size_t size);
@@ -46,25 +99,27 @@ ssize_t ngx_udp_win32_recv(ngx_connection_t *c, u_char *buf, size_t size);
 ssize_t ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size);
 ngx_chain_t *ngx_writev_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
-
-
-#if (NGX_HAVE_AIO)
-ssize_t ngx_aio_read(ngx_connection_t *c, u_char *buf, size_t size);
-ssize_t ngx_aio_read_chain(ngx_connection_t *c, ngx_chain_t *cl);
-ssize_t ngx_aio_write(ngx_connection_t *c, u_char *buf, size_t size);
-ngx_chain_t *ngx_aio_write_chain(ngx_connection_t *c, ngx_chain_t *in,
+ngx_chain_t *ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
-#endif
+ngx_chain_t *ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in,
+    off_t limit);
 
 
-extern ngx_os_io_t  ngx_os_io;
-extern ngx_int_t    ngx_ncpu;
-extern ngx_int_t    ngx_max_sockets;
-extern ngx_uint_t   ngx_inherited_nonblocking;
-extern ngx_uint_t   ngx_tcp_nodelay_and_tcp_nopush;
+extern ngx_os_io_t                       ngx_os_io;
+extern ngx_int_t                         ngx_ncpu;
+extern ngx_int_t                         ngx_max_sockets;
+extern ngx_uint_t                        ngx_inherited_nonblocking;
+extern ngx_uint_t                        ngx_tcp_nodelay_and_tcp_nopush;
 
+extern ngx_uint_t                        ngx_win32_ver;
 
-#include <ngx_win32.h>
+extern LPFN_ACCEPTEX                     ngx_acceptex;
+extern LPFN_CONNECTEX                    ngx_connectex;
+extern LPFN_DISCONNECTEX                 ngx_disconnectex;
+extern LPFN_TRANSMITFILE                 ngx_transmit_file;
+extern LPFN_TRANSMITPACKETS              ngx_transmit_packets;
+extern LPFN_GETACCEPTEXSOCKADDRS         ngx_get_acceptex_sockaddrs;
+extern LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
 
 
 #endif /* _NGX_OS_H_INCLUDED_ */

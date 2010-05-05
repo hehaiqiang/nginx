@@ -1,1 +1,2 @@
-ngwsx.exe -e
+nginx.exe -e
+pause

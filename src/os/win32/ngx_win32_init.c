@@ -9,16 +9,6 @@
 #include <nginx.h>
 
 
-ngx_int_t   ngx_ncpu;
-ngx_int_t   ngx_max_sockets;
-ngx_uint_t  ngx_inherited_nonblocking;
-ngx_uint_t  ngx_tcp_nodelay_and_tcp_nopush;
-
-
-ngx_fd_t    ngx_stderr_fileno;
-ngx_uint_t  ngx_win32_ver;
-
-
 ngx_os_io_t  ngx_os_io = {
     ngx_win32_recv,
     ngx_readv_chain,
@@ -34,15 +24,20 @@ ngx_os_io_t  ngx_os_io = {
 };
 
 
+ngx_int_t                         ngx_ncpu;
+ngx_int_t                         ngx_max_sockets;
+ngx_uint_t                        ngx_inherited_nonblocking;
+ngx_uint_t                        ngx_tcp_nodelay_and_tcp_nopush;
+
+ngx_uint_t                        ngx_win32_ver;
+
+LPFN_ACCEPTEX                     ngx_acceptex;
+LPFN_CONNECTEX                    ngx_connectex;
+LPFN_DISCONNECTEX                 ngx_disconnectex;
+LPFN_TRANSMITFILE                 ngx_transmit_file;
+LPFN_TRANSMITPACKETS              ngx_transmit_packets;
+LPFN_GETACCEPTEXSOCKADDRS         ngx_get_acceptex_sockaddrs;
 LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
-
-
-LPFN_ACCEPTEX              ngx_acceptex;
-LPFN_CONNECTEX             ngx_connectex;
-LPFN_DISCONNECTEX          ngx_disconnectex;
-LPFN_TRANSMITFILE          ngx_transmit_file;
-LPFN_TRANSMITPACKETS       ngx_transmit_packets;
-LPFN_GETACCEPTEXSOCKADDRS  ngx_get_acceptex_sockaddrs;
 
 
 static struct {
@@ -50,8 +45,8 @@ static struct {
     u_long        glen;
     void        **func;
     u_long        flen;
-    ngx_uint_t    winver;
-    char         *name;
+    ngx_uint_t    win_ver;
+    char         *func_name;
 }  ngx_wefs[] = {
 
     { WSAID_GETACCEPTEXSOCKADDRS,
@@ -114,7 +109,7 @@ ngx_os_init(ngx_log_t *log)
     ngx_err_t       err;
     ngx_uint_t      n;
     SOCKADDR_IN     sa;
-    SYSTEM_INFO     si = { 0 };
+    SYSTEM_INFO     si;
     OSVERSIONINFO   osvi;
 
     /* current windows version */
@@ -130,18 +125,18 @@ ngx_os_init(ngx_log_t *log)
 
 
     if (ngx_win32_ver >= NGX_WIN32_VER_600) {
-        handle = ngx_dlopen("kernel32.dll", 0);
+        handle = GetModuleHandle("kernel32.dll");
         if (handle == NULL) {
-            ngx_log_error(NGX_LOG_ALERT, log, 0,
-                          ngx_dlopen_n " \"kernel32.dll\" failed");
+            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
+                          "GetModuleHandle(\"kernel32.dll\") failed");
             return NGX_ERROR;
         }
 
-        ngx_get_queued_completion_status_ex = ngx_dlsym(handle,
+        ngx_get_queued_completion_status_ex = (void *) GetProcAddress(handle,
                                                  "GetQueuedCompletionStatusEx");
         if (ngx_get_queued_completion_status_ex == NULL) {
-            ngx_log_error(NGX_LOG_ALERT, log, 0,
-                         ngx_dlsym_n " \"GetQueuedCompletionStatusEx\" failed");
+            ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
+                      "GetProcAddress(\"GetQueuedCompletionStatusEx\") failed");
             return NGX_ERROR;
         }
     }
@@ -169,7 +164,7 @@ ngx_os_init(ngx_log_t *log)
         return NGX_ERROR;
     }
 
-    port = 1982;
+    port = 0;
 
 retry_bind:
 
@@ -214,7 +209,7 @@ retry_bind:
 
     for (n = 0; ngx_wefs[n].func; n++) {
 
-        if (ngx_win32_ver >= ngx_wefs[n].winver) {
+        if (ngx_win32_ver >= ngx_wefs[n].win_ver) {
             bytes = 0;
 
             if (WSAIoctl(s, SIO_GET_EXTENSION_FUNCTION_POINTER,
@@ -226,27 +221,27 @@ retry_bind:
 
                 if (err != WSAEINVAL && err != WSAEOPNOTSUPP) {
                     ngx_log_error(NGX_LOG_EMERG, log, err,
-                                  "WSAIoctl(%s) failed", ngx_wefs[n].name);
+                                  "WSAIoctl(%s) failed", ngx_wefs[n].func_name);
                     closesocket(s);
                     WSACleanup();
                     return NGX_ERROR;
                 }
 
                 ngx_log_error(NGX_LOG_ALERT, log, err,
-                              "WSAIoctl: %s", ngx_wefs[n].name);
+                              "WSAIoctl: %s", ngx_wefs[n].func_name);
 
                 continue;
             }
 
             ngx_log_debug1(NGX_LOG_DEBUG_CORE, log, 0,
-                           "WSAIoctl(%s) successfully", ngx_wefs[n].name);
+                           "WSAIoctl(%s) successfully", ngx_wefs[n].func_name);
         }
     }
 
-    ngx_log_debug0(NGX_LOG_DEBUG_CORE, log, 0, "WSAIoctl() done");
-
     closesocket(s);
 
+
+    ngx_memzero(&si, sizeof(SYSTEM_INFO));
 
     GetSystemInfo(&si);
 
@@ -264,7 +259,7 @@ retry_bind:
      * si.dwAllocationGranularity
      */
 
-    /* TODO: */
+    /* TODO: xxx */
 #if 0
     ngx_cpuinfo();
 #endif
@@ -328,64 +323,4 @@ ngx_os_status(ngx_log_t *log)
 #ifdef NGX_COMPILER
     ngx_log_error(NGX_LOG_NOTICE, log, 0, "built by " NGX_COMPILER);
 #endif
-}
-
-
-ngx_int_t
-ngx_os_signal_process(ngx_cycle_t *cycle, char *sig, ngx_int_t pid)
-{
-    return NGX_OK;
-}
-
-
-void
-ngx_event_log(ngx_err_t err, const char *fmt, ...)
-{
-}
-
-
-ngx_int_t
-ngx_message_box(u_char *caption, ngx_uint_t type, ngx_err_t err,
-    const char *fmt, ...)
-{
-    u_char   errstr[NGX_MAX_ERROR_STR], *p, *last;
-    va_list  args;
-
-    p = errstr;
-    last = errstr + NGX_MAX_ERROR_STR;
-
-    va_start(args, fmt);
-    p = ngx_vsnprintf(p, last - p, fmt, args);
-    va_end(args);
-
-    if (err) {
-
-        if ((unsigned) err >= 0x80000000) {
-            p = ngx_snprintf(p, last - p, " (%Xd: ", err);
-
-        } else {
-            p = ngx_snprintf(p, last - p, " (%d: ", err);
-        }
-
-        p = ngx_strerror_r(err, p, last - p);
-
-        if (p < last) {
-            *p++ = ')';
-        }
-    }
-
-    *p = '\0';
-
-    return MessageBox(NULL, errstr, caption, (UINT) type);
-}
-
-
-ngx_int_t
-ngx_file_append_mode(ngx_fd_t fd)
-{
-    if (SetFilePointer(fd, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
-        return NGX_FILE_ERROR;
-    }
-
-    return NGX_OK;
 }
