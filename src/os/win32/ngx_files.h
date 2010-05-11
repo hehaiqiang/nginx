@@ -237,7 +237,7 @@ ngx_file_uniq_t ngx_file_uniq(ngx_file_info_t *sb);
 
 #if (NGX_HAVE_CASELESS_FILESYSTEM)
 
-#define ngx_filename_cmp(s1, s2, n)                                           \
+#define ngx_filename_cmp(s1, s2, n)                                            \
     ngx_strncasecmp((char *) s1, (char *) s2, n)
 
 #else
@@ -262,7 +262,7 @@ ngx_int_t ngx_open_dir(ngx_str_t *name, ngx_dir_t *dir);
 #define ngx_open_dir_n           "FindFirstFile()"
 
 
-#define ngx_close_dir(d)                                                      \
+#define ngx_close_dir(d)                                                       \
     (FindClose((d)->dir) == 0 ? NGX_ERROR : 0)
 #define ngx_close_dir_n          "FindClose()"
 
@@ -271,12 +271,12 @@ ngx_int_t ngx_read_dir(ngx_dir_t *dir);
 #define ngx_read_dir_n           "FindNextFile()"
 
 
-#define ngx_create_dir(name, access)                                          \
+#define ngx_create_dir(name, access)                                           \
     (CreateDirectory(name, NULL) == 0 ? NGX_FILE_ERROR : 0)
 #define ngx_create_dir_n         "CreateDirectory()"
 
 
-#define ngx_delete_dir(name)                                                  \
+#define ngx_delete_dir(name)                                                   \
     (RemoveDirectory(name) == 0 ? NGX_FILE_ERROR : 0)
 #define ngx_delete_dir_n         "RemoveDirectory()"
 
@@ -290,8 +290,10 @@ ngx_int_t ngx_read_dir(ngx_dir_t *dir);
 #define ngx_de_info_n            "TODO: ngx_de_info()" /* "stat()" */
 #define ngx_de_link_info(name, dir)  NGX_FILE_ERROR /* lstat((const char *) name, &(dir)->info) */
 #define ngx_de_link_info_n       "TODO: ngx_de_link_info()" /* "lstat()" */
-#define ngx_de_is_dir(dir)       ((dir)->de.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-#define ngx_de_is_file(dir)      !((dir)->de.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+#define ngx_de_is_dir(dir)                                                     \
+    ((dir)->de.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+#define ngx_de_is_file(dir)                                                    \
+    !((dir)->de.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 #define ngx_de_is_link(dir)      0 /* (S_ISLNK((dir)->info.st_mode)) */
 #define ngx_de_access(dir)       0 /* (((dir)->info.st_mode) & 0777) */
 off_t ngx_de_size(ngx_dir_t *dir);

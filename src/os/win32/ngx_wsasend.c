@@ -33,7 +33,7 @@ ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size)
 
 retry:
 
-    if (ngx_event_flags & NGX_USE_IOCP_EVENT && !wev->ovlp.error) {
+    if (ngx_event_flags & NGX_USE_IOCP_EVENT && !wev->ovlp.posted_zero_byte) {
         ovlp = (WSAOVERLAPPED *) &wev->ovlp;
 
         /* overlapped io */
@@ -58,7 +58,7 @@ retry:
 
     if (rc == 0) {
         if (ovlp != NULL) {
-            wev->ovlp.error = 1;
+            wev->ovlp.posted_zero_byte = 1;
             wev->ready = 0;
             return NGX_AGAIN;
         }
@@ -69,22 +69,28 @@ retry:
         }
 #endif
 
-        wev->ovlp.error = 0;
+        wev->ovlp.posted_zero_byte = 0;
 
         return n;
     }
 
     if (err == WSA_IO_PENDING) {
         ngx_log_debug0(NGX_LOG_DEBUG_EVENT, c->log, err, "WSASend() not ready");
-        wev->ovlp.error = 1;
+        wev->ovlp.posted_zero_byte = 1;
         wev->ready = 0;
         return NGX_AGAIN;
     }
 
     if (err == WSAEWOULDBLOCK) {
         ngx_log_debug0(NGX_LOG_DEBUG_EVENT, c->log, err, "WSASend() not ready");
+
+        if (!wev->ovlp.posted_zero_byte) {
+            wev->ready = 0;
+            return NGX_AGAIN;
+        }
+
         /* post another overlapped-io WSASend() */
-        wev->ovlp.error = 0;
+        wev->ovlp.posted_zero_byte = 0;
         goto retry;
     }
 

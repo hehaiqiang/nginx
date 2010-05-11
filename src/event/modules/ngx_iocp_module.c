@@ -320,8 +320,10 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
             ev->available = (int) n;
             ev->error = 0;
 
-            if (n == 0 && !ev->accept && !ev->write && !ovlp->error) {
+            if (n == 0 && !ev->accept && !ev->write && !ovlp->posted_zero_byte)
+            {
                 ev->eof = 1;
+
             } else {
                 ev->eof = 0;
             }

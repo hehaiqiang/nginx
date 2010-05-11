@@ -435,6 +435,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\http\modules\ngx_http_dav_module.c"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\http\modules\ngx_http_empty_gif_module.c"
 						>
 					</File>
@@ -495,6 +499,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\http\modules\ngx_http_realip_module.c"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\http\modules\ngx_http_referer_module.c"
 						>
 					</File>
@@ -504,6 +512,10 @@
 					</File>
 					<File
 						RelativePath="..\..\src\http\modules\ngx_http_static_module.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_stub_status_module.c"
 						>
 					</File>
 					<File
@@ -615,6 +627,54 @@
 			<Filter
 				Name="mail"
 				>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_auth_http_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_core_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_handler.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_imap_handler.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_imap_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_parse.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_pop3_handler.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_pop3_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_proxy_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_smtp_handler.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_smtp_module.c"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="lib"

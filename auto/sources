@@ -240,6 +240,7 @@ WIN32_SRCS="$CORE_SRCS $EVENT_SRCS \
             src/os/win32/ngx_user.c \
             src/os/win32/ngx_event_log.c \
             src/os/win32/ngx_process_cycle.c \
+            src/os/win32/ngx_file_aio.c \
             src/event/ngx_event_acceptex.c"
 
 NGX_WIN32_ICONS="src/os/win32/nginx.ico"

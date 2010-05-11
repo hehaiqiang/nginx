@@ -383,6 +383,9 @@ ngx_http_log_script_write(ngx_http_request_t *r, ngx_http_log_script_t *script,
 
         ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
+#if (NGX_HAVE_FILE_AIO)
+        of.aio = clcf->aio;
+#endif
         of.valid = clcf->open_file_cache_valid;
         of.min_uses = clcf->open_file_cache_min_uses;
         of.test_dir = 1;

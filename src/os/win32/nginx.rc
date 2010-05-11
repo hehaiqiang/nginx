@@ -4,7 +4,7 @@
  */
 
 
-#include <ngx_res.h>
+#define IDI_NGINX  1000
 
 
-IDI_NGWSX ICON DISCARDABLE  "nginx.ico"
+IDI_NGINX ICON DISCARDABLE  "nginx.ico"

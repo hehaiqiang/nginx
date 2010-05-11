@@ -499,8 +499,8 @@ ngx_open_and_stat_file(u_char *name, ngx_open_file_info_t *of, ngx_log_t *log)
 
         mode = NGX_FILE_RDONLY|NGX_FILE_NONBLOCK;
 
-#if (NGX_WIN32 && NGX_USE_IOCP)
-        if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
+        if (ngx_event_flags & NGX_USE_IOCP_EVENT && of->aio) {
             mode |= NGX_FILE_OVERLAPPED;
         }
 #endif

@@ -29,7 +29,6 @@ make clean
 	--http-proxy-temp-path=temp/proxy_temp \
 	--http-fastcgi-temp-path=temp/fastcgi_temp \
 	--with-cc-opt="-DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS" \
-	--without-select_module \
 	--without-http-cache \
 	--without-http_rewrite_module \
 	--without-http_auth_basic_module \

@@ -21,6 +21,9 @@ typedef struct {
     WSAOVERLAPPED    ovlp;
     ngx_event_t     *event;
     int              error;
+
+    /* zero-byte recv/send with iocp */
+    unsigned         posted_zero_byte;
 } ngx_event_ovlp_t;
 
 #endif

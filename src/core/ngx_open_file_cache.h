@@ -30,6 +30,10 @@ typedef struct {
 
     ngx_uint_t               min_uses;
 
+#if (NGX_HAVE_FILE_AIO)
+    ngx_flag_t               aio;
+#endif
+
     unsigned                 test_dir:1;
     unsigned                 test_only:1;
     unsigned                 log:1;
