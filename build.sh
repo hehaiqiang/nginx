@@ -29,19 +29,22 @@ make clean
 	--http-proxy-temp-path=temp/proxy_temp \
 	--http-fastcgi-temp-path=temp/fastcgi_temp \
 	--with-cc-opt="-DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS" \
-	--without-http-cache \
-	--without-http_rewrite_module \
-	--without-http_auth_basic_module \
-	--without-http_gzip_module \
+	--with-select_module \
+	--with-file-aio \
+	--with-ipv6 \
 	--with-http_realip_module \
 	--with-http_addition_module \
 	--with-http_sub_module \
 	--with-http_dav_module \
 	--with-http_flv_module \
+	--with-http_gzip_static_module \
 	--with-http_random_index_module \
 	--with-http_stub_status_module \
+	--without-http-cache \
+	--without-http_rewrite_module \
+	--without-http_auth_basic_module \
 	--with-mail \
-	--with-ipv6 \
+	--with-zlib=lib/zlib-1.2.3 \
 	--with-debug
 
 make -f objs/Makefile

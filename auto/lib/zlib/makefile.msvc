@@ -5,9 +5,17 @@
 CFLAGS = -nologo -O2 -Ob1 -Oi -Gs $(LIBC) $(CPU_OPT)
 
 zlib.lib:
-	cd $(ZLIB)
+	cl -c $(CFLAGS) -Fo$(ZLIB)/adler32.obj $(ZLIB)/adler32.c
+	cl -c $(CFLAGS) -Fo$(ZLIB)/crc32.obj $(ZLIB)/crc32.c
+	cl -c $(CFLAGS) -Fo$(ZLIB)/deflate.obj $(ZLIB)/deflate.c
+	cl -c $(CFLAGS) -Fo$(ZLIB)/trees.obj $(ZLIB)/trees.c
+	cl -c $(CFLAGS) -Fo$(ZLIB)/zutil.obj $(ZLIB)/zutil.c
+	cl -c $(CFLAGS) -Fo$(ZLIB)/compress.obj $(ZLIB)/compress.c
 
-	cl -c $(CFLAGS) adler32.c crc32.c deflate.c trees.c zutil.c compress.c
-
-	link -lib -out:zlib.lib adler32.obj crc32.obj deflate.obj \
-		trees.obj zutil.obj compress.obj
+	link -lib -out:$(ZLIB)/zlib.lib \
+		$(ZLIB)/adler32.obj \
+		$(ZLIB)/crc32.obj \
+		$(ZLIB)/deflate.obj \
+		$(ZLIB)/trees.obj \
+		$(ZLIB)/zutil.obj \
+		$(ZLIB)/compress.obj

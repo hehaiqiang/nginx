@@ -96,7 +96,7 @@ CORE_LINK="$CORE_LINK -subsystem:windows"
 #     Program database manager mismatch; please check your installation
 if [ $NGX_CC_NAME != msvc8 ]; then
    CFLAGS="$CFLAGS -Zi"
-   CORE_LINK="$CORE_LINK -debug"
+   #CORE_LINK="$CORE_LINK -debug"
 fi
 
 
