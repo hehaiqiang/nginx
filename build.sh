@@ -41,9 +41,9 @@ make clean
 	--with-http_random_index_module \
 	--with-http_stub_status_module \
 	--without-http-cache \
-	--without-http_rewrite_module \
 	--without-http_auth_basic_module \
 	--with-mail \
+	--with-pcre=lib/pcre-7.9 \
 	--with-zlib=lib/zlib-1.2.3 \
 	--with-debug
 

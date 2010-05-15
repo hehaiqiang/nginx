@@ -7,15 +7,70 @@ PCREFLAGS =	-DHAVE_CONFIG_H -DPCRE_STATIC -DPOSIX_MALLOC_THRESHOLD=10
 
 
 pcre.lib:
-	cd $(PCRE)
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_chartables.obj $(PCRE)/pcre_chartables.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_compile.obj $(PCRE)/pcre_compile.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_config.obj $(PCRE)/pcre_config.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_dfa_exec.obj $(PCRE)/pcre_dfa_exec.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_exec.obj $(PCRE)/pcre_exec.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_fullinfo.obj $(PCRE)/pcre_fullinfo.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_get.obj $(PCRE)/pcre_get.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_globals.obj $(PCRE)/pcre_globals.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_info.obj $(PCRE)/pcre_info.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_maketables.obj $(PCRE)/pcre_maketables.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_newline.obj $(PCRE)/pcre_newline.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_ord2utf8.obj $(PCRE)/pcre_ord2utf8.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_refcount.obj $(PCRE)/pcre_refcount.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_study.obj $(PCRE)/pcre_study.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_tables.obj $(PCRE)/pcre_tables.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_try_flipped.obj $(PCRE)/pcre_try_flipped.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_ucd.obj $(PCRE)/pcre_ucd.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_valid_utf8.obj $(PCRE)/pcre_valid_utf8.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_version.obj $(PCRE)/pcre_version.c
+	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) \
+		-Fo$(PCRE)/pcre_xclass.obj $(PCRE)/pcre_xclass.c
 
-	cl -nologo -c $(CFLAGS) -I . $(PCREFLAGS) pcre_*.c
-
-	link -lib -out:pcre.lib -verbose:lib pcre_*.obj
+	link -lib -out:$(PCRE)/pcre.lib -verbose:lib \
+		$(PCRE)/pcre_chartables.obj \
+		$(PCRE)/pcre_compile.obj \
+		$(PCRE)/pcre_config.obj \
+		$(PCRE)/pcre_dfa_exec.obj \
+		$(PCRE)/pcre_exec.obj \
+		$(PCRE)/pcre_fullinfo.obj \
+		$(PCRE)/pcre_get.obj \
+		$(PCRE)/pcre_globals.obj \
+		$(PCRE)/pcre_info.obj \
+		$(PCRE)/pcre_maketables.obj \
+		$(PCRE)/pcre_newline.obj \
+		$(PCRE)/pcre_ord2utf8.obj \
+		$(PCRE)/pcre_refcount.obj \
+		$(PCRE)/pcre_study.obj \
+		$(PCRE)/pcre_tables.obj \
+		$(PCRE)/pcre_try_flipped.obj \
+		$(PCRE)/pcre_ucd.obj \
+		$(PCRE)/pcre_valid_utf8.obj \
+		$(PCRE)/pcre_version.obj \
+		$(PCRE)/pcre_xclass.obj
 
 pcre.h:
-	cd $(PCRE)
-
-	copy /y pcre.h.generic pcre.h
-	copy /y config.h.generic config.h
-	copy /y pcre_chartables.c.dist pcre_chartables.c
+	cp $(PCRE)/pcre.h.generic $(PCRE)/pcre.h
+	cp $(PCRE)/config.h.generic $(PCRE)/config.h
+	cp $(PCRE)/pcre_chartables.c.dist $(PCRE)/pcre_chartables.c
