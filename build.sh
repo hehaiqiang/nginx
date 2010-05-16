@@ -43,6 +43,9 @@ make clean
 	--without-http-cache \
 	--without-http_auth_basic_module \
 	--with-mail \
+	--with-mail_ssl_module \
+	--with-openssl=lib/openssl-0.9.8n \
+	--with-openssl-opt=enable-tlsext \
 	--with-pcre=lib/pcre-7.9 \
 	--with-zlib=lib/zlib-1.2.3 \
 	--with-debug
