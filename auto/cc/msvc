@@ -90,7 +90,8 @@ CFLAGS="$CFLAGS $LIBC"
 CORE_LIBS="$CORE_LIBS kernel32.lib user32.lib"
 
 # Win32 GUI mode application
-CORE_LINK="$CORE_LINK -subsystem:windows -entry:mainCRTStartup"
+#CORE_LINK="$CORE_LINK -subsystem:windows -entry:mainCRTStartup"
+CORE_LINK="$CORE_LINK -subsystem:windows"
 
 # debug
 # msvc8 under Wine issues
@@ -125,13 +126,13 @@ ngx_binout="-Fe"
 ngx_objext="obj"
 ngx_binext=".exe"
 
-#ngx_long_start='@<<
-#	'
-#ngx_long_end='<<'
-#ngx_long_regex_cont=' \
-#	'
-#ngx_long_cont='
-#	'
+ngx_long_start='@<<
+	'
+ngx_long_end='<<'
+ngx_long_regex_cont=' \
+	'
+ngx_long_cont='
+	'
 
 # MSVC understand / in path
 #ngx_regex_dirsep='\\'

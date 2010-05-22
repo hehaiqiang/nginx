@@ -3,19 +3,19 @@
 # Copyright (C) Ngwsx
 
 
-CYGWIN=/cygdrive/j
-WINDOWS=j:
-VS=tools/vc2008
+VS=/j/tools/vc2008
 IDE_DIR=$VS/Common7/IDE
 VC_DIR=$VS/VC
 
 export CC=cl
-export INCLUDE="$WINDOWS/$VC_DIR/PlatformSDK/Include;$WINDOWS/$VC_DIR/Include"
-export LIB="$WINDOWS/$VC_DIR/PlatformSDK/Lib;$WINDOWS/$VC_DIR/lib"
-export PATH=$CYGWIN/$IDE_DIR:$CYGWIN/$VC_DIR/bin:$PATH
+export INCLUDE=$VC_DIR/PlatformSDK/Include:$VC_DIR/Include:$INCLUDE
+export LIB=$VC_DIR/PlatformSDK/Lib:$VC_DIR/lib:$LIB
+export PATH=$IDE_DIR:$VC_DIR/bin:$PATH
 
 
-make clean
+rm -f nginx.exe
+
+nmake clean
 
 ./configure \
 	--crossbuild=win32 \
@@ -43,13 +43,10 @@ make clean
 	--without-http-cache \
 	--without-http_auth_basic_module \
 	--with-mail \
-	--with-mail_ssl_module \
-	--with-openssl=lib/openssl-0.9.8n \
-	--with-openssl-opt=enable-tlsext \
-	--with-pcre=lib/pcre-7.9 \
-	--with-zlib=lib/zlib-1.2.3 \
+	--with-pcre=lib/pcre \
+	--with-zlib=lib/zlib \
 	--with-debug
 
-make -f objs/Makefile
+nmake -f objs/Makefile
 
-cp objs/nginx.exe ./nginx.exe
+cp objs/nginx.exe nginx.exe
