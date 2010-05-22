@@ -63,7 +63,7 @@ typedef int32_t           ssize_t;
 typedef int32_t           off_t;
 typedef int32_t           _off_t;
 
-typedef int32_t           time_t;
+typedef long              time_t;
 
 typedef int32_t           intptr_t;
 typedef uint32_t          uintptr_t;

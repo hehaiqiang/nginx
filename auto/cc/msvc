@@ -64,10 +64,11 @@ CFLAGS="$CFLAGS $CPU_OPT"
 
 # warnings
 
+#CFLAGS="$CFLAGS -W4"
 CFLAGS="$CFLAGS -W3"
 
 # stop on warning
-#CFLAGS="$CFLAGS -WX"
+CFLAGS="$CFLAGS -WX"
 
 # disable logo
 CFLAGS="$CFLAGS -nologo"
@@ -89,21 +90,21 @@ CFLAGS="$CFLAGS $LIBC"
 CORE_LIBS="$CORE_LIBS kernel32.lib user32.lib"
 
 # Win32 GUI mode application
-CORE_LINK="$CORE_LINK -subsystem:windows"
+CORE_LINK="$CORE_LINK -subsystem:windows -entry:mainCRTStartup"
 
 # debug
 # msvc8 under Wine issues
 #     Program database manager mismatch; please check your installation
-if [ $NGX_CC_NAME != msvc8 ]; then
-   CFLAGS="$CFLAGS -Zi"
+#if [ $NGX_CC_NAME != msvc8 ]; then
+   #CFLAGS="$CFLAGS -Zi"
    #CORE_LINK="$CORE_LINK -debug"
-fi
+#fi
 
 
 # MSVC 2005 supports C99 variadic macros
-if [ $NGX_CC_NAME = msvc8 ]; then
+#if [ $NGX_CC_NAME = msvc8 ]; then
    have=NGX_HAVE_C99_VARIADIC_MACROS . auto/have
-fi
+#fi
 
 
 # precompiled headers

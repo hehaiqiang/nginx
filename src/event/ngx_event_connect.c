@@ -65,7 +65,7 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
         goto failed;
     }
 
-#if (NGX_WIN32 && NGX_HAVE_IOCP)
+#if (NGX_HAVE_IOCP)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
         if (pc->local == NULL) {
@@ -133,7 +133,7 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
     ngx_log_debug3(NGX_LOG_DEBUG_EVENT, pc->log, 0,
                    "connect to %V, fd:%d #%d", pc->name, s, c->number);
 
-#if (NGX_WIN32 && NGX_HAVE_IOCP)
+#if (NGX_HAVE_IOCP)
 
     if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
         rc = ngx_connectex(s, pc->sockaddr, pc->socklen, NULL, 0, NULL,
