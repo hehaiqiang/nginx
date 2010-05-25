@@ -191,18 +191,15 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
     }
 
     if (ngx_add_conn) {
-        if (rc == -1) {
-            if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
-                rev->ready = 1;
-            }
-
-            /* NGX_EINPROGRESS */
-
+        if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
+            rev->ready = 1;
             return NGX_AGAIN;
         }
 
-        if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
-            rev->ready = 1;
+        if (rc == -1) {
+
+            /* NGX_EINPROGRESS */
+
             return NGX_AGAIN;
         }
 

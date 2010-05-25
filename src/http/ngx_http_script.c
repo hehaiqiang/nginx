@@ -1386,7 +1386,7 @@ ngx_http_script_file_code(ngx_http_script_engine_t *e)
 
     ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_HAVE_FILE_AIO)
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
     of.aio = clcf->aio;
 #endif
     of.read_ahead = clcf->read_ahead;

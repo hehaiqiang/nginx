@@ -80,10 +80,6 @@ ngx_http_flv_handler(ngx_http_request_t *r)
         return NGX_DECLINED;
     }
 
-    if (r->zero_in_uri) {
-        return NGX_DECLINED;
-    }
-
     rc = ngx_http_discard_request_body(r);
 
     if (rc != NGX_OK) {
@@ -106,7 +102,7 @@ ngx_http_flv_handler(ngx_http_request_t *r)
 
     ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_HAVE_FILE_AIO)
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
     of.aio = clcf->aio;
 #endif
     of.read_ahead = clcf->read_ahead;

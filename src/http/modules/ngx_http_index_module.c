@@ -116,10 +116,6 @@ ngx_http_index_handler(ngx_http_request_t *r)
         return NGX_DECLINED;
     }
 
-    if (r->zero_in_uri) {
-        return NGX_DECLINED;
-    }
-
     ilcf = ngx_http_get_module_loc_conf(r, ngx_http_index_module);
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
 
@@ -205,7 +201,7 @@ ngx_http_index_handler(ngx_http_request_t *r)
 
         ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_HAVE_FILE_AIO)
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
         of.aio = clcf->aio;
 #endif
         of.read_ahead = clcf->read_ahead;
@@ -298,7 +294,7 @@ ngx_http_index_test_dir(ngx_http_request_t *r, ngx_http_core_loc_conf_t *clcf,
 
     ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_HAVE_FILE_AIO)
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
     of.aio = clcf->aio;
 #endif
     of.test_dir = 1;

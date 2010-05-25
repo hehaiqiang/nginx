@@ -30,7 +30,7 @@ typedef struct {
 
     ngx_uint_t               min_uses;
 
-#if (NGX_HAVE_FILE_AIO)
+#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
     ngx_flag_t               aio;
 #endif
 
