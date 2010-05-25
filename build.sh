@@ -4,8 +4,10 @@
 
 
 VS=/j/tools/vc2008
+#VS=/c/Program\ Files/Microsoft\ Visual\ Studio\ 8
 IDE_DIR=$VS/Common7/IDE
 VC_DIR=$VS/VC
+
 
 export CC=cl
 export INCLUDE=$VC_DIR/PlatformSDK/Include:$VC_DIR/Include:$INCLUDE
@@ -39,10 +41,14 @@ nmake clean
 	--with-http_flv_module \
 	--with-http_gzip_static_module \
 	--with-http_random_index_module \
+	--with-http_secure_link_module \
 	--with-http_stub_status_module \
-	--without-http-cache \
+	--with-http_ssl_module \
 	--without-http_auth_basic_module \
 	--with-mail \
+	--with-mail_ssl_module \
+	--with-openssl=lib/openssl \
+	--with-openssl-opt=enable-tlsext \
 	--with-pcre=lib/pcre \
 	--with-zlib=lib/zlib \
 	--with-debug

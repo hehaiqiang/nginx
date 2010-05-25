@@ -22,6 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="0"
+			EnableManagedIncrementalBuild="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -40,15 +41,23 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/misc;../../lib/pcre;../../lib/zlib;../../objs"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/misc;../../lib/openssl/openssl/include;../../lib/pcre;../../lib/zlib;../../objs"
+				AdditionalUsingDirectories="$(NOINHERIT)"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
+				MinimalRebuild="false"
+				ExceptionHandling="0"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="$(NOINHERIT)"
+				ForcedIncludeFiles="$(NOINHERIT)"
+				ForcedUsingFiles="$(NOINHERIT)"
+				UndefinePreprocessorDefinitions="$(NOINHERIT)"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -61,12 +70,22 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="advapi32.lib kernel32.lib user32.lib ws2_32.lib pcre.lib zlib.lib msvcrt.lib $(NOINHERIT)"
+				UseUnicodeResponseFiles="false"
+				AdditionalDependencies="advapi32.lib crypt32.lib gdi32.lib kernel32.lib user32.lib ws2_32.lib libeay32.lib ssleay32.lib pcre.lib zlib.lib $(NOINHERIT)"
+				ShowProgress="0"
 				OutputFile="../../$(ProjectName).exe"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../lib/pcre;../../lib/zlib"
-				IgnoreAllDefaultLibraries="true"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="../../lib/openssl/openssl/lib;../../lib/pcre;../../lib/zlib"
+				GenerateManifest="false"
+				AdditionalManifestDependencies="$(NOINHERIT)"
+				EnableUAC="false"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
+				AddModuleNamesToAssembly="$(NOINHERIT)"
+				EmbedManagedResourceFile="$(NOINHERIT)"
+				ForceSymbolReferences="$(NOINHERIT)"
+				DelayLoadDLLs="$(NOINHERIT)"
+				AssemblyLinkResource="$(NOINHERIT)"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -118,15 +137,19 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
 				Optimization="2"
-				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/misc;../../lib/pcre;../../lib/zlib"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_WIN32_WINNT=0x0501;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableIntrinsicFunctions="false"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="../../src/os/win32;../../src/core;../../src/event;../../src/event/modules;../../src/http;../../src/http/modules;../../src/mail;../../src/misc;../../lib/openssl/openssl/include;../../lib/pcre;../../lib/zlib;../../objs"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;$(NOINHERIT)"
+				ExceptionHandling="0"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,11 +162,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="advapi32.lib user32.lib ws2_32.lib pcre.lib zlib.lib $(NOINHERIT)"
+				AdditionalDependencies="advapi32.lib crypt32.lib gdi32.lib kernel32.lib user32.lib ws2_32.lib libeay32.lib ssleay32.lib pcre.lib zlib.lib $(NOINHERIT)"
 				OutputFile="../../$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="../../lib/pcre;../../lib/zlib"
-				GenerateDebugInformation="true"
+				AdditionalLibraryDirectories="../../lib/openssl/openssl/lib;../../lib/pcre;../../lib/zlib"
+				GenerateManifest="false"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -264,6 +288,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\core\ngx_regex.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\core\ngx_resolver.c"
 					>
 				</File>
@@ -316,6 +344,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\event\ngx_event_openssl.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\event\ngx_event_pipe.c"
 					>
 				</File>
@@ -357,6 +389,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\http\ngx_http_core_module.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\http\ngx_http_file_cache.c"
 					>
 				</File>
 				<File
@@ -455,6 +491,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\http\modules\ngx_http_gzip_filter_module.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_gzip_static_module.c"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\http\modules\ngx_http_headers_filter_module.c"
 						>
 					</File>
@@ -507,7 +551,23 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\src\http\modules\ngx_http_rewrite_module.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_secure_link_module.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_split_clients_module.c"
+						>
+					</File>
+					<File
 						RelativePath="..\..\src\http\modules\ngx_http_ssi_filter_module.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_ssl_module.c"
 						>
 					</File>
 					<File
@@ -675,6 +735,10 @@
 					RelativePath="..\..\src\mail\ngx_mail_smtp_module.c"
 					>
 				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_ssl_module.c"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="lib"
@@ -830,6 +894,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\event\ngx_event_openssl.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\event\ngx_event_pipe.h"
 					>
 				</File>
@@ -900,6 +968,10 @@
 						RelativePath="..\..\src\http\modules\ngx_http_ssi_filter_module.h"
 						>
 					</File>
+					<File
+						RelativePath="..\..\src\http\modules\ngx_http_ssl_module.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -934,10 +1006,6 @@
 					</File>
 					<File
 						RelativePath="..\..\src\os\win32\ngx_process_cycle.h"
-						>
-					</File>
-					<File
-						RelativePath="..\..\src\os\win32\ngx_res.h"
 						>
 					</File>
 					<File
@@ -985,6 +1053,10 @@
 					RelativePath="..\..\src\mail\ngx_mail_smtp_module.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\src\mail\ngx_mail_ssl_module.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="lib"
@@ -997,6 +1069,14 @@
 			<Filter
 				Name="objs"
 				>
+				<File
+					RelativePath="..\..\objs\ngx_auto_config.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\objs\ngx_auto_headers.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
