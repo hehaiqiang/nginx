@@ -22,7 +22,7 @@ typedef struct {
     ngx_event_t     *event;
     int              error;
 
-    /* zero-byte recv/send with iocp */
+    /* zero-byte recv/send with overlapped-io */
     unsigned         posted_zero_byte;
 } ngx_event_ovlp_t;
 

@@ -84,7 +84,7 @@ retry:
     if (err == WSAEWOULDBLOCK) {
         ngx_log_debug0(NGX_LOG_DEBUG_EVENT, c->log, err, "WSASend() not ready");
 
-        if (!wev->ovlp.posted_zero_byte) {
+        if ((ngx_event_flags & NGX_USE_IOCP_EVENT) == 0) {
             wev->ready = 0;
             return NGX_AGAIN;
         }

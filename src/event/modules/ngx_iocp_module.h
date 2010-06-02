@@ -13,12 +13,11 @@
 
 
 typedef struct {
+    ngx_uint_t    concurrent_threads;
     ngx_uint_t    events;
 
     ngx_uint_t    post_acceptex;
     ngx_flag_t    acceptex_read;
-
-    ngx_uint_t    concurrent_threads;
 } ngx_iocp_conf_t;
 
 
@@ -26,7 +25,6 @@ ngx_int_t ngx_iocp_add_file(ngx_file_t *file);
 
 
 extern ngx_module_t  ngx_iocp_module;
-
 extern ngx_addr_t    ngx_iocp_local_addr;
 
 

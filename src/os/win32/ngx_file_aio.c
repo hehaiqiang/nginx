@@ -26,7 +26,7 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
     ngx_event_t      *ev;
     ngx_event_aio_t  *aio;
 
-    if (!(ngx_event_flags & NGX_USE_IOCP_EVENT) || !ngx_file_aio) {
+    if ((ngx_event_flags & NGX_USE_IOCP_EVENT) == 0 || !ngx_file_aio) {
         return ngx_read_file(file, buf, size, offset);
     }
 

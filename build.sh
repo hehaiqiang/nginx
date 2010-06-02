@@ -15,6 +15,10 @@ export LIB=$VC_DIR/PlatformSDK/Lib:$VC_DIR/lib:$LIB
 export PATH=$IDE_DIR:$VC_DIR/bin:$PATH
 
 
+#nmake -f objs/Makefile
+#exit
+
+
 rm -f nginx.exe
 
 nmake clean
