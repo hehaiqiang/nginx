@@ -66,8 +66,13 @@ typedef unsigned __int64  uint64_t;
 typedef uint32_t          size_t;
 typedef int32_t           ssize_t;
 
+#if 0
 typedef int32_t           off_t;
 typedef int32_t           _off_t;
+#else
+typedef int64_t           off_t;
+typedef int64_t           _off_t;
+#endif
 
 typedef long              time_t;
 

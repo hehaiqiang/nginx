@@ -145,7 +145,7 @@ retry:
             size = (off_t) (cl->buf->last - cl->buf->pos);
 
             if (n >= size) {
-                n -= size;
+                n -= (ssize_t) size;
                 cl->buf->pos = cl->buf->last;
 
                 continue;
