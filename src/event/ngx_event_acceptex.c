@@ -95,6 +95,14 @@ ngx_event_acceptex(ngx_event_t *ev)
 
     ngx_memcpy(c->sockaddr, remote_sa, remote_socklen);
 
+    c->local_sockaddr = ngx_palloc(c->pool, local_socklen);
+    if (c->local_sockaddr == NULL) {
+        ngx_close_accepted_connection(c);
+        goto post_acceptex;
+    }
+
+    ngx_memcpy(c->local_sockaddr, local_sa, local_socklen);
+
     log = ngx_palloc(c->pool, sizeof(ngx_log_t));
     if (log == NULL) {
         ngx_close_accepted_connection(c);
@@ -136,7 +144,6 @@ ngx_event_acceptex(ngx_event_t *ev)
 
     c->socklen = remote_socklen;
     c->listening = ls;
-    c->local_sockaddr = ls->sockaddr;
 
     c->unexpected_eof = 1;
 

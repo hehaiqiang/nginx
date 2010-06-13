@@ -67,8 +67,6 @@ typedef struct {
 } ngx_os_io_t;
 
 
-#if (_MSC_VER < 1500)
-
 typedef struct _OVERLAPPED_ENTRY {
     ULONG_PTR     lpCompletionKey;
     LPOVERLAPPED  lpOverlapped;
@@ -76,7 +74,6 @@ typedef struct _OVERLAPPED_ENTRY {
     DWORD         dwNumberOfBytesTransferred;
 } OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;
 
-#endif
 
 typedef BOOL (WINAPI *LPFN_GETQUEUEDCOMPLETIONSTATUSEX)(HANDLE CompletionPort,
     LPOVERLAPPED_ENTRY lpCompletionPortEntries, ULONG ulCount,
