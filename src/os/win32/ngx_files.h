@@ -31,6 +31,9 @@ typedef struct {
     HANDLE                       dir;
     WIN32_FIND_DATA              de;
 
+    u_char                       path[MAX_PATH];
+    size_t                       len;
+
     unsigned                     type:8;
     unsigned                     valid_info:1;
     unsigned                     valid_de:1;
@@ -300,9 +303,44 @@ off_t ngx_de_size(ngx_dir_t *dir);
 time_t ngx_de_mtime(ngx_dir_t *dir);
 
 
-ngx_int_t ngx_open_glob(ngx_glob_t *gl);
-#define ngx_open_glob_n          "FindFirstFile()"
-ngx_int_t ngx_read_glob(ngx_glob_t *gl, ngx_str_t *name);
+static ngx_inline ngx_int_t
+ngx_open_glob(ngx_glob_t *gl)
+{
+    ngx_str_t  name;
+
+    name.len = ngx_strlen(gl->pattern);
+    name.data = gl->pattern;
+
+    if (ngx_open_dir(&name, &gl->dir) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    return NGX_OK;
+}
+#define ngx_open_glob_n          ngx_open_dir_n
+
+static ngx_inline ngx_int_t
+ngx_read_glob(ngx_glob_t *gl, ngx_str_t *name)
+{
+    u_char  *p;
+    size_t   len;
+
+    if (ngx_read_dir(&gl->dir) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    len = ngx_strlen(gl->dir.de.cFileName);
+
+    p = gl->dir.path + gl->dir.len;
+    p = ngx_cpymem(p, gl->dir.de.cFileName, len);
+    *p = '\0';
+
+    name->len = gl->dir.len + len;
+    name->data = gl->dir.path;
+
+    return NGX_OK;
+}
+
 #define ngx_close_glob(gl)       ngx_close_dir(&(gl)->dir)
 
 

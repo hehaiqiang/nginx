@@ -1,6 +1,9 @@
+*.exe
 *.ilk
+*.lib
 *.log
 *.ncb
+*.obj
 *.pdb
 *.pid
 *.suo
@@ -26,11 +29,7 @@ lib/openssl/ms/version32.rc
 lib/openssl/openssl
 lib/openssl/out32
 lib/openssl/tmp32
-lib/pcre/*.lib
-lib/pcre/*.obj
 lib/pcre/config.h
 lib/pcre/pcre.h
 lib/pcre/pcre_chartables.c
-lib/zlib/*.lib
-lib/zlib/*.obj
 objs

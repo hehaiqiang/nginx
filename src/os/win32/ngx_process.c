@@ -708,7 +708,7 @@ ngx_install_service(void)
                                 SERVICE_ALL_ACCESS,
                                 SERVICE_WIN32_OWN_PROCESS
                                 |SERVICE_INTERACTIVE_PROCESS,
-                                SERVICE_DEMAND_START, SERVICE_ERROR_NORMAL,
+                                SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
                                 exec_path, NULL, NULL, NULL, NULL, NULL);
         if (service == NULL) {
             ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,

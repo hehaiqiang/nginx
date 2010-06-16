@@ -471,17 +471,37 @@ ngx_de_mtime(ngx_dir_t *dir)
 ngx_int_t
 ngx_open_dir(ngx_str_t *name, ngx_dir_t *dir)
 {
-    u_char  buf[NGX_MAX_PATH], *p;
+    u_char  *p, *last;
 
-    p = ngx_cpymem(buf, name->data, name->len);
+    last = ngx_cpymem(dir->path, name->data, name->len);
+    *last = '\0';
 
-    if (ngx_strlchr(name->data, name->data + name->len, '*') == NULL) {
-        *p++ = '\\';
-        *p++ = '*';
-        *p = '\0';
+    if (ngx_strlchr(dir->path, last, '*') == NULL) {
+        p = last - 1;
+
+        if (*p != '\\' || *p != '/') {
+            *last++ = '/';
+        }
+
+        dir->len = last - dir->path;
+
+        *last++ = '*';
+        *last = '\0';
+
+    } else {
+
+        while (last > dir->path) {
+
+            if (*last == '\\' || *last == '/') {
+                dir->len = last - dir->path + 1;
+                break;
+            }
+
+            last--;
+        }
     }
 
-    dir->dir = FindFirstFile(buf, &dir->de);
+    dir->dir = FindFirstFile(dir->path, &dir->de);
 
     if (dir->dir == INVALID_HANDLE_VALUE) {
         return NGX_ERROR;
@@ -507,50 +527,6 @@ ngx_read_dir(ngx_dir_t *d)
     }
 
     d->valid_info = 1;
-
-    return NGX_OK;
-}
-
-
-ngx_int_t
-ngx_open_glob(ngx_glob_t *gl)
-{
-    gl->dir.dir = FindFirstFile(gl->pattern, &gl->dir.de);
-
-    if (gl->dir.dir == INVALID_HANDLE_VALUE) {
-        return NGX_ERROR;
-    }
-
-    /* TODO: gl->test */
-
-    gl->dir.valid_de = 1;
-    gl->dir.valid_info = 0;
-
-    return NGX_OK;
-}
-
-
-ngx_int_t
-ngx_read_glob(ngx_glob_t *gl, ngx_str_t *name)
-{
-    if (gl->dir.valid_de) {
-        name->len = ngx_strlen(gl->dir.de.cFileName);
-        name->data = gl->dir.de.cFileName;
-
-        gl->dir.valid_de = 0;
-
-        return NGX_OK;
-    }
-
-    gl->dir.valid_info = 0;
-
-    if (FindNextFile(gl->dir.dir, &gl->dir.de) == 0) {
-        if (ngx_errno == ERROR_NO_MORE_FILES) {
-            return NGX_DONE;
-        }
-
-        return NGX_ERROR;
-    }
 
     return NGX_OK;
 }
