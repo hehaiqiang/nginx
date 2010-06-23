@@ -77,7 +77,7 @@ CFLAGS="$CFLAGS -nologo"
 LINK="\$(CC)"
 
 # the link flags
-CORE_LINK="$CORE_LINK -link -verbose:lib"
+CORE_LINK="$CORE_LINK -link -nodefaultlib:oldnames.lib -verbose:lib"
 
 # link with libcmt.lib, multithreaded
 LIBC="-MT"
