@@ -24,6 +24,5 @@ objs/ngx_gui.obj:	src/gui/ngx_gui.h \
 
 
 objs/ngx_gui.res:	 src/gui/ngx_gui.ico \
-	src/gui/ngx_gui_tray.ico \
 	src/gui/ngx_gui.rc
 	rc -foobjs/ngx_gui.res -I src/gui src/gui/ngx_gui.rc

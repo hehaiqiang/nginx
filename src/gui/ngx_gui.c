@@ -23,8 +23,7 @@ static int ngx_set_autorun(int set);
 
 static HINSTANCE       instance;
 static HMENU           menu;
-static HICON           main_icon;
-static HICON           tray_icon;
+static HICON           icon;
 static NOTIFYICONDATA  nid;
 static char            sbin_path[MAX_PATH];
 
@@ -86,15 +85,14 @@ ngx_dlgproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
     case WM_INITDIALOG:
         menu = LoadMenu(instance, MAKEINTRESOURCE(IDR_NGINX));
-        main_icon = LoadIcon(instance, MAKEINTRESOURCE(IDI_NGINX));
-        tray_icon = LoadIcon(instance, MAKEINTRESOURCE(IDI_NGINX_TRAY));
+        icon = LoadIcon(instance, MAKEINTRESOURCE(IDI_NGINX));
 
         nid.cbSize = sizeof(NOTIFYICONDATA);
         nid.hWnd = hwnd;
         nid.uID = ID_NGINX;
         nid.uFlags = NIF_ICON|NIF_MESSAGE|NIF_TIP;
         nid.uCallbackMessage = WM_NGX_TRAYICON;
-        nid.hIcon = tray_icon;
+        nid.hIcon = icon;
 
         lstrcpy(nid.szTip, NGX_APPNAME);
 

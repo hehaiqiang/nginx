@@ -14,8 +14,7 @@ FONT 8, "MS Sans Serif"
 }
 
 
-IDI_NGINX      ICON DISCARDABLE "ngx_gui.ico"
-IDI_NGINX_TRAY ICON DISCARDABLE "ngx_gui_tray.ico"
+IDI_NGINX ICON DISCARDABLE "ngx_gui.ico"
 
 
 IDR_NGINX MENU DISCARDABLE

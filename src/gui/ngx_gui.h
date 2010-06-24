@@ -18,9 +18,8 @@
 #define IDD_NGINX              100
 
 #define IDI_NGINX              200
-#define IDI_NGINX_TRAY         300
 
-#define IDR_NGINX              400
+#define IDR_NGINX              300
 
 #define ID_NGINX               1000
 
