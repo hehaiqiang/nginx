@@ -241,6 +241,8 @@ WIN32_SRCS="$CORE_SRCS $EVENT_SRCS \
             src/os/win32/ngx_event_log.c \
             src/os/win32/ngx_process_cycle.c \
             src/os/win32/ngx_file_aio.c \
+            src/os/win32/ngx_transmitfile_chain.c \
+            src/os/win32/ngx_transmitpackets_chain.c \
             src/event/ngx_event_acceptex.c"
 
 NGX_WIN32_ICONS="src/os/win32/nginx.ico"
@@ -415,6 +417,10 @@ HTTP_FASTCGI_SRCS=src/http/modules/ngx_http_fastcgi_module.c
 
 HTTP_UWSGI_MODULE=ngx_http_uwsgi_module
 HTTP_UWSGI_SRCS=src/http/modules/ngx_http_uwsgi_module.c
+
+
+HTTP_SCGI_MODULE=ngx_http_scgi_module
+HTTP_SCGI_SRCS=src/http/modules/ngx_http_scgi_module.c
 
 
 HTTP_PERL_MODULE=ngx_http_perl_module

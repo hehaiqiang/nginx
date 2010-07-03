@@ -201,9 +201,6 @@ ngx_http_index_handler(ngx_http_request_t *r)
 
         ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
-        of.aio = clcf->aio;
-#endif
         of.read_ahead = clcf->read_ahead;
         of.directio = clcf->directio;
         of.valid = clcf->open_file_cache_valid;
@@ -294,9 +291,6 @@ ngx_http_index_test_dir(ngx_http_request_t *r, ngx_http_core_loc_conf_t *clcf,
 
     ngx_memzero(&of, sizeof(ngx_open_file_info_t));
 
-#if (NGX_WIN32 && NGX_HAVE_FILE_AIO)
-    of.aio = clcf->aio;
-#endif
     of.test_dir = 1;
     of.test_only = 1;
     of.valid = clcf->open_file_cache_valid;

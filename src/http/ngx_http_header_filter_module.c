@@ -68,7 +68,7 @@ static ngx_str_t ngx_http_status_lines[] = {
 
     ngx_string("301 Moved Permanently"),
     ngx_string("302 Moved Temporarily"),
-    ngx_null_string,  /* "303 See Other" */
+    ngx_string("303 See Other"),
     ngx_string("304 Not Modified"),
 
     /* ngx_null_string, */  /* "305 Use Proxy" */
@@ -169,6 +169,10 @@ ngx_http_header_filter(ngx_http_request_t *r)
     struct sockaddr_in6       *sin6;
 #endif
     u_char                     addr[NGX_SOCKADDR_STRLEN];
+
+    if (r->header_sent) {
+        return NGX_OK;
+    }
 
     r->header_sent = 1;
 

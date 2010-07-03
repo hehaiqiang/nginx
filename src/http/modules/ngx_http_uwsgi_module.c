@@ -36,24 +36,11 @@ typedef struct {
 } ngx_http_uwsgi_loc_conf_t;
 
 
-typedef struct {
-    ngx_uint_t                 status;
-    ngx_uint_t                 status_count;
-    u_char                    *status_start;
-    u_char                    *status_end;
-} ngx_http_uwsgi_ctx_t;
-
-
-#define NGX_HTTP_UWSGI_PARSE_NO_HEADER  20
-
-
 static ngx_int_t ngx_http_uwsgi_eval(ngx_http_request_t *r,
     ngx_http_uwsgi_loc_conf_t *uwcf);
 static ngx_int_t ngx_http_uwsgi_create_request(ngx_http_request_t *r);
 static ngx_int_t ngx_http_uwsgi_reinit_request(ngx_http_request_t *r);
 static ngx_int_t ngx_http_uwsgi_process_status_line(ngx_http_request_t *r);
-static ngx_int_t ngx_http_uwsgi_parse_status_line(ngx_http_request_t *r,
-    ngx_http_uwsgi_ctx_t *ctx);
 static ngx_int_t ngx_http_uwsgi_process_header(ngx_http_request_t *r);
 static ngx_int_t ngx_http_uwsgi_process_header(ngx_http_request_t *r);
 static void ngx_http_uwsgi_abort_request(ngx_http_request_t *r);
@@ -426,8 +413,8 @@ static ngx_int_t
 ngx_http_uwsgi_handler(ngx_http_request_t *r)
 {
     ngx_int_t                   rc;
+    ngx_http_status_t          *status;
     ngx_http_upstream_t        *u;
-    ngx_http_uwsgi_ctx_t       *ctx;
     ngx_http_uwsgi_loc_conf_t  *uwcf;
 
     if (r->subrequest_in_memory) {
@@ -441,12 +428,12 @@ ngx_http_uwsgi_handler(ngx_http_request_t *r)
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
-    ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_uwsgi_ctx_t));
-    if (ctx == NULL) {
+    status = ngx_pcalloc(r->pool, sizeof(ngx_http_status_t));
+    if (status == NULL) {
         return NGX_HTTP_INTERNAL_SERVER_ERROR;
     }
 
-    ngx_http_set_ctx(r, ctx, ngx_http_uwsgi_module);
+    ngx_http_set_ctx(r, status, ngx_http_uwsgi_module);
 
     uwcf = ngx_http_get_module_loc_conf(r, ngx_http_uwsgi_module);
 
@@ -846,227 +833,20 @@ ngx_http_uwsgi_create_request(ngx_http_request_t *r)
 static ngx_int_t
 ngx_http_uwsgi_reinit_request(ngx_http_request_t *r)
 {
-    ngx_http_uwsgi_ctx_t  *ctx;
+    ngx_http_status_t  *status;
 
-    ctx = ngx_http_get_module_ctx(r, ngx_http_uwsgi_module);
+    status = ngx_http_get_module_ctx(r, ngx_http_uwsgi_module);
 
-    if (ctx == NULL) {
+    if (status == NULL) {
         return NGX_OK;
     }
 
-    ctx->status = 0;
-    ctx->status_count = 0;
-    ctx->status_start = NULL;
-    ctx->status_end = NULL;
+    status->code = 0;
+    status->count = 0;
+    status->start = NULL;
+    status->end = NULL;
 
     r->upstream->process_header = ngx_http_uwsgi_process_status_line;
-
-    return NGX_OK;
-}
-
-static ngx_int_t
-ngx_http_uwsgi_parse_status_line(ngx_http_request_t *r,
-    ngx_http_uwsgi_ctx_t *ctx)
-{
-    u_char                ch;
-    u_char               *p;
-    ngx_http_upstream_t  *u;
-    enum {
-        sw_start = 0,
-        sw_H,
-        sw_HT,
-        sw_HTT,
-        sw_HTTP,
-        sw_first_major_digit,
-        sw_major_digit,
-        sw_first_minor_digit,
-        sw_minor_digit,
-        sw_status,
-        sw_space_after_status,
-        sw_status_text,
-        sw_almost_done
-    } state;
-
-    u = r->upstream;
-
-    state = r->state;
-
-    for (p = u->buffer.pos; p < u->buffer.last; p++) {
-        ch = *p;
-
-        switch (state) {
-
-        /* "HTTP/" */
-        case sw_start:
-            switch (ch) {
-            case 'H':
-                state = sw_H;
-                break;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        case sw_H:
-            switch (ch) {
-            case 'T':
-                state = sw_HT;
-                break;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        case sw_HT:
-            switch (ch) {
-            case 'T':
-                state = sw_HTT;
-                break;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        case sw_HTT:
-            switch (ch) {
-            case 'P':
-                state = sw_HTTP;
-                break;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        case sw_HTTP:
-            switch (ch) {
-            case '/':
-                state = sw_first_major_digit;
-                break;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        /* the first digit of major HTTP version */
-        case sw_first_major_digit:
-            if (ch < '1' || ch > '9') {
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-
-            state = sw_major_digit;
-            break;
-
-        /* the major HTTP version or dot */
-        case sw_major_digit:
-            if (ch == '.') {
-                state = sw_first_minor_digit;
-                break;
-            }
-
-            if (ch < '0' || ch > '9') {
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-
-            break;
-
-        /* the first digit of minor HTTP version */
-        case sw_first_minor_digit:
-            if (ch < '0' || ch > '9') {
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-
-            state = sw_minor_digit;
-            break;
-
-        /* the minor HTTP version or the end of the request line */
-        case sw_minor_digit:
-            if (ch == ' ') {
-                state = sw_status;
-                break;
-            }
-
-            if (ch < '0' || ch > '9') {
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-
-            break;
-
-        /* HTTP status code */
-        case sw_status:
-            if (ch == ' ') {
-                break;
-            }
-
-            if (ch < '0' || ch > '9') {
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-
-            ctx->status = ctx->status * 10 + ch - '0';
-
-            if (++ctx->status_count == 3) {
-                state = sw_space_after_status;
-                ctx->status_start = p - 2;
-            }
-
-            break;
-
-        /* space or end of line */
-        case sw_space_after_status:
-            switch (ch) {
-            case ' ':
-                state = sw_status_text;
-                break;
-            case '.':                /* IIS may send 403.1, 403.2, etc */
-                state = sw_status_text;
-                break;
-            case CR:
-                state = sw_almost_done;
-                break;
-            case LF:
-                goto done;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-            break;
-
-        /* any text until end of line */
-        case sw_status_text:
-            switch (ch) {
-            case CR:
-                state = sw_almost_done;
-
-                break;
-            case LF:
-                goto done;
-            }
-            break;
-
-        /* end of status line */
-        case sw_almost_done:
-            ctx->status_end = p - 1;
-            switch (ch) {
-            case LF:
-                goto done;
-            default:
-                return NGX_HTTP_UWSGI_PARSE_NO_HEADER;
-            }
-        }
-    }
-
-    u->buffer.pos = p;
-    r->state = state;
-
-    return NGX_AGAIN;
-
-done:
-
-    u->buffer.pos = p + 1;
-
-    if (ctx->status_end == NULL) {
-        ctx->status_end = p;
-    }
-
-    r->state = sw_start;
 
     return NGX_OK;
 }
@@ -1075,51 +855,48 @@ done:
 static ngx_int_t
 ngx_http_uwsgi_process_status_line(ngx_http_request_t *r)
 {
-    ngx_int_t             rc;
+    size_t                 len;
+    ngx_int_t              rc;
+    ngx_http_status_t     *status;
     ngx_http_upstream_t   *u;
-    ngx_http_uwsgi_ctx_t  *ctx;
 
-    ctx = ngx_http_get_module_ctx(r, ngx_http_uwsgi_module);
+    status = ngx_http_get_module_ctx(r, ngx_http_uwsgi_module);
 
-    if (ctx == NULL) {
+    if (status == NULL) {
         return NGX_ERROR;
     }
 
-    rc = ngx_http_uwsgi_parse_status_line(r, ctx);
+    u = r->upstream;
+
+    rc = ngx_http_parse_status_line(r, &u->buffer, status);
 
     if (rc == NGX_AGAIN) {
         return rc;
     }
 
-    u = r->upstream;
-
-    if (rc == NGX_HTTP_UWSGI_PARSE_NO_HEADER) {
-
-        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
-                      "upstream sent no valid HTTP/1.0 header");
-
+    if (rc == NGX_ERROR) {
         r->http_version = NGX_HTTP_VERSION_9;
-        u->headers_in.status_n = NGX_HTTP_OK;
-        u->state->status = NGX_HTTP_OK;
 
-        return NGX_OK;
+        u->process_header = ngx_http_uwsgi_process_header;
+
+        return ngx_http_uwsgi_process_header(r);
     }
 
     if (u->state) {
-        u->state->status = ctx->status;
+        u->state->status = status->code;
     }
 
-    u->headers_in.status_n = ctx->status;
+    u->headers_in.status_n = status->code;
 
-    u->headers_in.status_line.len = ctx->status_end - ctx->status_start;
-    u->headers_in.status_line.data = ngx_pnalloc(r->pool,
-                                                 u->headers_in.status_line.len);
+    len = status->end - status->start;
+    u->headers_in.status_line.len = len;
+
+    u->headers_in.status_line.data = ngx_pnalloc(r->pool, len);
     if (u->headers_in.status_line.data == NULL) {
         return NGX_ERROR;
     }
 
-    ngx_memcpy(u->headers_in.status_line.data, ctx->status_start,
-               u->headers_in.status_line.len);
+    ngx_memcpy(u->headers_in.status_line.data, status->start, len);
 
     ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                    "http uwsgi status %ui \"%V\"",
@@ -1134,8 +911,10 @@ ngx_http_uwsgi_process_status_line(ngx_http_request_t *r)
 static ngx_int_t
 ngx_http_uwsgi_process_header(ngx_http_request_t *r)
 {
-    ngx_int_t                       rc;
+    ngx_str_t                      *status_line;
+    ngx_int_t                       rc, status;
     ngx_table_elt_t                *h;
+    ngx_http_upstream_t            *u;
     ngx_http_upstream_header_t     *hh;
     ngx_http_upstream_main_conf_t  *umcf;
 
@@ -1198,6 +977,45 @@ ngx_http_uwsgi_process_header(ngx_http_request_t *r)
 
             ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                            "http uwsgi header done");
+
+            if (r->http_version > NGX_HTTP_VERSION_9) {
+                return NGX_OK;
+            }
+
+            u = r->upstream;
+
+            if (u->headers_in.status) {
+                status_line = &u->headers_in.status->value;
+
+                status = ngx_atoi(status_line->data, 3);
+                if (status == NGX_ERROR) {
+                    ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                                  "upstream sent invalid status \"%V\"",
+                                  status_line);
+                    return NGX_HTTP_UPSTREAM_INVALID_HEADER;
+                }
+
+                r->http_version = NGX_HTTP_VERSION_10;
+                u->headers_in.status_n = status;
+                u->headers_in.status_line = *status_line;
+
+            } else if (u->headers_in.location) {
+                r->http_version = NGX_HTTP_VERSION_10;
+                u->headers_in.status_n = 302;
+                ngx_str_set(&u->headers_in.status_line,
+                            "302 Moved Temporarily");
+
+            } else {
+                ngx_log_error(NGX_LOG_ERR, r->connection->log, 0,
+                              "upstream sent neither valid HTTP/1.0 header "
+                              "nor \"Status\" header line");
+                u->headers_in.status_n = 200;
+                ngx_str_set(&u->headers_in.status_line, "200 OK");
+            }
+
+            if (u->state) {
+                u->state->status = u->headers_in.status_n;
+            }
 
             return NGX_OK;
         }

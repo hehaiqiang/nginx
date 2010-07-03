@@ -65,6 +65,14 @@ static char ngx_http_error_302_page[] =
 ;
 
 
+static char ngx_http_error_303_page[] =
+"<html>" CRLF
+"<head><title>303 See Other</title></head>" CRLF
+"<body bgcolor=\"white\">" CRLF
+"<center><h1>303 See Other</h1></center>" CRLF
+;
+
+
 static char ngx_http_error_400_page[] =
 "<html>" CRLF
 "<head><title>400 Bad Request</title></head>" CRLF
@@ -281,7 +289,7 @@ static ngx_str_t ngx_http_error_pages[] = {
     /* ngx_null_string, */               /* 300 */
     ngx_string(ngx_http_error_301_page),
     ngx_string(ngx_http_error_302_page),
-    ngx_null_string,                     /* 303 */
+    ngx_string(ngx_http_error_303_page),
 
 #define NGX_HTTP_LAST_LEVEL_300  304
 #define NGX_HTTP_LEVEL_300       (NGX_HTTP_LAST_LEVEL_300 - 301)
@@ -590,31 +598,24 @@ ngx_http_send_special_response(ngx_http_request_t *r,
 
     msie_padding = 0;
 
-    if (!r->zero_body) {
-        if (ngx_http_error_pages[err].len) {
-            r->headers_out.content_length_n = ngx_http_error_pages[err].len
-                                              + len;
-            if (clcf->msie_padding
-                && (r->headers_in.msie || r->headers_in.chrome)
-                && r->http_version >= NGX_HTTP_VERSION_10
-                && err >= NGX_HTTP_LEVEL_300)
-            {
-                r->headers_out.content_length_n +=
-                                             sizeof(ngx_http_msie_padding) - 1;
-                msie_padding = 1;
-            }
-
-            r->headers_out.content_type_len = sizeof("text/html") - 1;
-            ngx_str_set(&r->headers_out.content_type, "text/html");
-            r->headers_out.content_type_lowcase = NULL;
-
-        } else {
-            r->headers_out.content_length_n = -1;
+    if (ngx_http_error_pages[err].len) {
+        r->headers_out.content_length_n = ngx_http_error_pages[err].len + len;
+        if (clcf->msie_padding
+            && (r->headers_in.msie || r->headers_in.chrome)
+            && r->http_version >= NGX_HTTP_VERSION_10
+            && err >= NGX_HTTP_LEVEL_300)
+        {
+            r->headers_out.content_length_n +=
+                                         sizeof(ngx_http_msie_padding) - 1;
+            msie_padding = 1;
         }
 
+        r->headers_out.content_type_len = sizeof("text/html") - 1;
+        ngx_str_set(&r->headers_out.content_type, "text/html");
+        r->headers_out.content_type_lowcase = NULL;
+
     } else {
-        r->headers_out.content_length_n = 0;
-        err = 0;
+        r->headers_out.content_length_n = -1;
     }
 
     if (r->headers_out.content_length) {

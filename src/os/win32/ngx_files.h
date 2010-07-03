@@ -28,6 +28,15 @@ typedef uint64_t                 ngx_file_uniq_t;
 
 
 typedef struct {
+    u_char                      *name;
+    size_t                       size;
+    void                        *addr;
+    ngx_fd_t                     fd;
+    ngx_log_t                   *log;
+} ngx_file_mapping_t;
+
+
+typedef struct {
     HANDLE                       dir;
     WIN32_FIND_DATA              de;
 
@@ -236,6 +245,10 @@ ngx_is_file(ngx_file_info_t *sb)
 off_t ngx_file_size(ngx_file_info_t *sb);
 time_t ngx_file_mtime(ngx_file_info_t *sb);
 ngx_file_uniq_t ngx_file_uniq(ngx_file_info_t *sb);
+
+
+ngx_int_t ngx_create_file_mapping(ngx_file_mapping_t *fm);
+void ngx_close_file_mapping(ngx_file_mapping_t *fm);
 
 
 #if (NGX_HAVE_CASELESS_FILESYSTEM)

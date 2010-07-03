@@ -118,10 +118,10 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 
         if (head == NULL) {
             head = cl->buf->pos;
-            head_size = size;
+            head_size = (size_t) size;
 
         } else if (prev == cl->buf->pos) {
-            head_size += size;
+            head_size += (size_t) size;
 
         } else {
             break;
@@ -162,7 +162,7 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
                 }
             }
 
-            file_size += size;
+            file_size += (size_t) size;
             send += size;
             fprev = cl->buf->file_pos + size;
             cl = cl->next;
@@ -196,10 +196,10 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 
         if (tail == NULL) {
             tail = cl->buf->pos;
-            tail_size = size;
+            tail_size = (size_t) size;
 
         } else if (prev == cl->buf->pos) {
-            tail_size += size;
+            tail_size += (size_t) size;
 
         } else {
             break;

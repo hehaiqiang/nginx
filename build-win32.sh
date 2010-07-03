@@ -3,14 +3,7 @@
 # Copyright (C) Ngwsx
 
 
-#. vc8.sh
-#. vc9.sh
-. vc10.sh
-
-export CC=cl
-export INCLUDE=$SDK/include:$VC/include:$INCLUDE
-export LIB=$SDK/lib:$VC/lib:$LIB
-export PATH=$IDE:$VC/bin:$PATH
+. vc.sh
 
 
 #nmake -f objs/Makefile

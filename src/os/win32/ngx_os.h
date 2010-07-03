@@ -67,6 +67,8 @@ typedef struct {
 } ngx_os_io_t;
 
 
+#if 0
+
 #if (_MSC_VER <= 1400)
 
 typedef struct _OVERLAPPED_ENTRY {
@@ -75,6 +77,8 @@ typedef struct _OVERLAPPED_ENTRY {
     ULONG_PTR     Internal;
     DWORD         dwNumberOfBytesTransferred;
 } OVERLAPPED_ENTRY, *LPOVERLAPPED_ENTRY;
+
+#endif
 
 #endif
 

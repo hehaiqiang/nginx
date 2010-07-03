@@ -72,6 +72,7 @@
 #define NGX_HTTP_SPECIAL_RESPONSE          300
 #define NGX_HTTP_MOVED_PERMANENTLY         301
 #define NGX_HTTP_MOVED_TEMPORARILY         302
+#define NGX_HTTP_SEE_OTHER                 303
 #define NGX_HTTP_NOT_MODIFIED              304
 
 #define NGX_HTTP_BAD_REQUEST               400
@@ -488,7 +489,6 @@ struct ngx_http_request_s {
     unsigned                          plain_http:1;
     unsigned                          chunked:1;
     unsigned                          header_only:1;
-    unsigned                          zero_body:1;
     unsigned                          keepalive:1;
     unsigned                          lingering_close:1;
     unsigned                          discard_body:1;
