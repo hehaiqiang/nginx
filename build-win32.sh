@@ -26,6 +26,7 @@ nmake clean
 	--http-proxy-temp-path=temp/proxy_temp \
 	--http-fastcgi-temp-path=temp/fastcgi_temp \
 	--http-uwsgi-temp-path=temp/uwsgi_temp \
+	--http-scgi-temp-path=temp/scgi_temp \
 	--with-cc-opt="-DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS" \
 	--with-select_module \
 	--with-file-aio \
