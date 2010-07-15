@@ -68,8 +68,8 @@ ngx_libc_gmtime(time_t s, struct tm *tm)
 void
 ngx_gettimeofday(struct timeval *tp)
 {
-    ULONGLONG   usec;
     FILETIME    ft;
+    ULONGLONG   usec;
     SYSTEMTIME  st;
 
     GetSystemTime(&st);
