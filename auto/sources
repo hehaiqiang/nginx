@@ -243,6 +243,7 @@ WIN32_SRCS="$CORE_SRCS $EVENT_SRCS \
             src/os/win32/ngx_file_aio.c \
             src/os/win32/ngx_transmitfile_chain.c \
             src/os/win32/ngx_transmitpackets_chain.c \
+            src/event/ngx_event_udp_recv.c \
             src/event/ngx_event_acceptex.c"
 
 NGX_WIN32_ICONS="src/os/win32/nginx.ico"

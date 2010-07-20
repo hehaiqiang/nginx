@@ -37,6 +37,7 @@ struct ngx_listening_s {
     ngx_log_t          *logp;
 
     size_t              pool_size;
+    size_t              udp_recv_buffer_size;
     /* should be here because of the AcceptEx() preread */
     size_t              post_accept_buffer_size;
     /* should be here because of the deferred accept */

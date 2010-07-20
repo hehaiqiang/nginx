@@ -18,6 +18,8 @@ typedef struct {
 
     ngx_uint_t    post_acceptex;
     ngx_flag_t    acceptex_read;
+
+    ngx_uint_t    post_udp_recv;
 } ngx_iocp_conf_t;
 
 

@@ -416,18 +416,20 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
             }
 #endif
 
-            if (listen(s, ls[i].backlog) == -1) {
-                ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
-                              "listen() to %V, backlog %d failed",
-                              &ls[i].addr_text, ls[i].backlog);
-
-                if (ngx_close_socket(s) == -1) {
+            if (ls[i].type == SOCK_STREAM) {
+                if (listen(s, ls[i].backlog) == -1) {
                     ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
-                                  ngx_close_socket_n " %V failed",
-                                  &ls[i].addr_text);
-                }
+                                  "listen() to %V, backlog %d failed",
+                                  &ls[i].addr_text, ls[i].backlog);
 
-                return NGX_ERROR;
+                    if (ngx_close_socket(s) == -1) {
+                        ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
+                                      ngx_close_socket_n " %V failed",
+                                      &ls[i].addr_text);
+                    }
+
+                    return NGX_ERROR;
+                }
             }
 
             ls[i].listen = 1;
@@ -524,7 +526,7 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
         }
 #endif
 
-        if (ls[i].listen) {
+        if (ls[i].type == SOCK_STREAM && ls[i].listen) {
 
             /* change backlog via listen() */
 

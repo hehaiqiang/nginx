@@ -63,6 +63,13 @@ static ngx_command_t  ngx_iocp_commands[] = {
       offsetof(ngx_iocp_conf_t, acceptex_read),
       NULL },
 
+    { ngx_string("iocp_post_udp_recv"),
+      NGX_EVENT_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_num_slot,
+      0,
+      offsetof(ngx_iocp_conf_t, post_udp_recv),
+      NULL },
+
       ngx_null_command
 };
 
@@ -203,7 +210,7 @@ ngx_iocp_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
 
     /* TODO: flags == NGX_IOCP_ACCEPT */
 
-    ev->ovlp.event = NULL;
+    ev->ovlp.event = ev;
 
     if (CreateIoCompletionPort((HANDLE) c->fd, iocp, (ULONG_PTR) c, 0) == NULL)
     {
@@ -332,6 +339,8 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
 
             ev->available = 0;
             ev->error = 1;
+
+            ev->ovlp.error = err;
         }
 
         if ((flags & NGX_POST_THREAD_EVENTS) && (ev->write || !ev->accept)) {
@@ -372,6 +381,8 @@ ngx_iocp_create_conf(ngx_cycle_t *cycle)
     iocpcf->post_acceptex = NGX_CONF_UNSET_UINT;
     iocpcf->acceptex_read = NGX_CONF_UNSET;
 
+    iocpcf->post_udp_recv = NGX_CONF_UNSET_UINT;
+
     return iocpcf;
 }
 
@@ -386,6 +397,8 @@ ngx_iocp_init_conf(ngx_cycle_t *cycle, void *conf)
 
     ngx_conf_init_uint_value(iocpcf->post_acceptex, 512);
     ngx_conf_init_value(iocpcf->acceptex_read, 0);
+
+    ngx_conf_init_uint_value(iocpcf->post_udp_recv, 512);
 
     return NGX_CONF_OK;
 }

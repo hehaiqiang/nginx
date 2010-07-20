@@ -788,7 +788,12 @@ ngx_event_process_init(ngx_cycle_t *cycle)
         if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
             ngx_iocp_conf_t  *iocpcf;
 
-            rev->handler = ngx_event_acceptex;
+            if (ls[i].type == SOCK_STREAM) {
+                rev->handler = ngx_event_acceptex;
+
+            } else {
+                rev->handler = ngx_event_udp_aio_recv;
+            }
 
             if (ngx_use_accept_mutex) {
                 continue;
@@ -801,14 +806,29 @@ ngx_event_process_init(ngx_cycle_t *cycle)
             ls[i].log.handler = ngx_acceptex_log_error;
 
             iocpcf = ngx_event_get_conf(cycle->conf_ctx, ngx_iocp_module);
-            if (ngx_event_post_acceptex(&ls[i], iocpcf->post_acceptex)
-                == NGX_ERROR)
-            {
-                return NGX_ERROR;
+
+            if (ls[i].type == SOCK_STREAM) {
+                if (ngx_event_post_acceptex(&ls[i], iocpcf->post_acceptex)
+                    == NGX_ERROR)
+                {
+                    return NGX_ERROR;
+                }
+
+            } else {
+                if (ngx_event_post_udp_recv(&ls[i], iocpcf->post_udp_recv)
+                    == NGX_ERROR)
+                {
+                    return NGX_ERROR;
+                }
             }
 
         } else {
-            rev->handler = ngx_event_accept;
+            if (ls[i].type == SOCK_STREAM) {
+                rev->handler = ngx_event_accept;
+
+            } else {
+                rev->handler = ngx_event_udp_recv;
+            }
 
             if (ngx_use_accept_mutex) {
                 continue;
@@ -821,7 +841,12 @@ ngx_event_process_init(ngx_cycle_t *cycle)
 
 #else
 
-        rev->handler = ngx_event_accept;
+        if (ls[i].type == SOCK_STREAM) {
+            rev->handler = ngx_event_accept;
+
+        } else {
+            rev->handler = ngx_event_udp_recv;
+        }
 
         if (ngx_use_accept_mutex) {
             continue;
