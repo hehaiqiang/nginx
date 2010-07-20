@@ -1,0 +1,36 @@
+
+#
+# Copyright (C) Ngwsx
+#
+
+
+ngx_addon_name=ngx_http_php_module
+
+CORE_LIBS="$CORE_LIBS \
+	$ngx_addon_dir/../../../../php/Release_TS/php5ts.lib"
+
+CORE_INCS="$CORE_INCS \
+	$ngx_addon_dir/../../../../php \
+	$ngx_addon_dir/../../../../php/main \
+	$ngx_addon_dir/../../../../php/zend \
+	$ngx_addon_dir/../../../../php/tsrm \
+	$ngx_addon_dir"
+
+HTTP_MODULES="$HTTP_MODULES \
+	ngx_http_php_module"
+
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS \
+	$ngx_addon_dir/ngx_http_php_module.h"
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
+	$ngx_addon_dir/ngx_http_php_module.c \
+	$ngx_addon_dir/ngx_http_php_sapi.c \
+	$ngx_addon_dir/ngx_http_php_zend.c"
+
+CFLAGS="$CFLAGS \
+	-DWINNT \
+	-DWIN32 \
+	-DPHP_WIN32 \
+	-DZTS \
+	-DZEND_WIN32 \
+	-DZEND_DEBUG=0"

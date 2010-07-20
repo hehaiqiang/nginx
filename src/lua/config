@@ -1,0 +1,20 @@
+
+#
+# Copyright (C) Ngwsx
+#
+
+
+ngx_addon_name=ngx_http_lua_module
+
+CORE_LIBS="$CORE_LIBS \
+	$ngx_addon_dir/../../../../lua/lua.lib"
+
+CORE_INCS="$CORE_INCS \
+	$ngx_addon_dir/../../../../lua/src \
+	$ngx_addon_dir"
+
+HTTP_MODULES="$HTTP_MODULES \
+	ngx_http_lua_module"
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
+	$ngx_addon_dir/ngx_http_lua_module.c"

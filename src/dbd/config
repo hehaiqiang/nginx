@@ -1,0 +1,39 @@
+
+#
+# Copyright (C) Ngwsx
+#
+
+
+ngx_addon_name=ngx_dbd_module
+
+CORE_MODULES="$CORE_MODULES \
+	ngx_dbd_module \
+	ngx_dbd_core_module"
+
+CORE_LIBS="$CORE_LIBS \
+	$ngx_addon_dir/../../lib/libdrizzle/libdrizzle.lib"
+
+CORE_INCS="$CORE_INCS \
+	$ngx_addon_dir/../../lib/libdrizzle \
+	$ngx_addon_dir/../../lib/libdrizzle/libdrizzle/win32 \
+	$ngx_addon_dir"
+
+HTTP_MODULES="$HTTP_MODULES \
+	ngx_http_dbd_module"
+
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS \
+	$ngx_addon_dir/ngx_dbd.h \
+	$ngx_addon_dir/ngx_dbd_v1.h \
+	$ngx_addon_dir/ngx_dbd_core_module.h \
+	$ngx_addon_dir/ngx_dbd_core_module_v1.h"
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS \
+	$ngx_addon_dir/ngx_dbd.c \
+	$ngx_addon_dir/ngx_dbd_v1.c \
+	$ngx_addon_dir/ngx_dbd_core_module.c \
+	$ngx_addon_dir/ngx_dbd_core_module_v1.c \
+	$ngx_addon_dir/ngx_dbd_drizzle_module.c \
+	$ngx_addon_dir/ngx_http_dbd_module.c"
+
+have=NGX_DBD_DRIZZLE
+. auto/have
