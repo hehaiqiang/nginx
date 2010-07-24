@@ -175,7 +175,8 @@ UNIX_SRCS="$CORE_SRCS $EVENT_SRCS \
             src/os/unix/ngx_setproctitle.c \
             src/os/unix/ngx_posix_init.c \
             src/os/unix/ngx_user.c \
-            src/os/unix/ngx_process_cycle.c"
+            src/os/unix/ngx_process_cycle.c \
+            src/event/ngx_event_udp_recv.c"
 
 POSIX_DEPS=src/os/unix/ngx_posix_config.h
 
