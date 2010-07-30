@@ -557,9 +557,9 @@ u_char *ngx_acceptex_log_error(ngx_log_t *log, u_char *buf, size_t len);
 
 
 void ngx_event_udp_recv(ngx_event_t *ev);
+void ngx_event_udp_aio_recv(ngx_event_t *ev);
 
 #if (NGX_WIN32)
-void ngx_event_udp_aio_recv(ngx_event_t *ev);
 ngx_int_t ngx_event_post_udp_recv(ngx_listening_t *ls, ngx_uint_t n);
 #endif
 

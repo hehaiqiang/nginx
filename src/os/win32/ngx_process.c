@@ -1013,9 +1013,44 @@ ngx_service_handler(ngx_uint_t ctl, ngx_uint_t type, void *data, void *ctx)
 }
 
 
+static LONG WINAPI
+ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
+{
+    u_char                          file[NGX_MAX_PATH], *p;
+    ngx_fd_t                        fd;
+    MINIDUMP_EXCEPTION_INFORMATION  ei;
+
+    if (ex == NULL || ngx_cycle == NULL) {
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+
+    p = ngx_snprintf(file, NGX_MAX_PATH, "%Vlogs/nginx.dmp",
+                     &ngx_cycle->prefix);
+    *p = '\0';
+
+    fd = ngx_open_file(file, NGX_FILE_TRUNCATE, NGX_FILE_CREATE_OR_OPEN, 0);
+    if (fd == NGX_INVALID_FILE) {
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+
+    ei.ThreadId = GetCurrentThreadId();
+    ei.ExceptionPointers = ex;
+    ei.ClientPointers = FALSE;
+
+    MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), fd,
+                      MiniDumpNormal, &ei, NULL, NULL);
+
+    ngx_close_file(fd);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+
 int WINAPI
 WinMain(HINSTANCE inst, HINSTANCE prev_inst, LPSTR cmd_line, int cmd_show)
 {
+    SetUnhandledExceptionFilter(ngx_unhandled_exception_filter);
+
     /*
      * command line arguments:
      *

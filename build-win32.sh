@@ -42,8 +42,11 @@ nmake clean
 	--without-http_auth_basic_module \
 	--without-http-cache \
 	--with-mail \
-	--with-pcre=lib/pcre \
-	--with-zlib=lib/zlib \
+	--with-pcre=../../pcre \
+	--with-zlib=../../zlib \
+	--add-module=../addon/ngx_dbd_module \
+	--add-module=../addon/ngx_udp_module \
+	--add-module=../addon/ngx_udp_dns_module \
 	--with-debug
 
 nmake -f objs/Makefile

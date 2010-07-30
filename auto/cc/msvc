@@ -87,7 +87,7 @@ LIBC="-MT"
 
 CFLAGS="$CFLAGS $LIBC"
 
-CORE_LIBS="$CORE_LIBS kernel32.lib user32.lib"
+CORE_LIBS="$CORE_LIBS kernel32.lib user32.lib dbghelp.lib"
 
 # Win32 GUI mode application
 #CORE_LINK="$CORE_LINK -subsystem:windows -entry:mainCRTStartup"
@@ -97,8 +97,8 @@ CORE_LINK="$CORE_LINK -subsystem:windows"
 # msvc8 under Wine issues
 #     Program database manager mismatch; please check your installation
 #if [ $NGX_CC_NAME != msvc8 ]; then
-   #CFLAGS="$CFLAGS -Zi"
-   #CORE_LINK="$CORE_LINK -debug"
+   CFLAGS="$CFLAGS -Zi"
+   CORE_LINK="$CORE_LINK -debug"
 #fi
 
 

@@ -10,6 +10,8 @@
 *.swp
 *.user
 Makefile
+nginx.dmp
+nginx.WK3
 build/vc7/Debug
 build/vc7/Release
 build/vc8/Debug

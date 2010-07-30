@@ -125,6 +125,8 @@ typedef uint64_t          uintptr_t;
 #include <mswsock.h>
 #include <ws2tcpip.h>
 
+#include <dbghelp.h>
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <time.h>
