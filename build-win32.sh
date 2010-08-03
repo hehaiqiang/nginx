@@ -38,15 +38,16 @@ nmake clean
 	--with-http_flv_module \
 	--with-http_gzip_static_module \
 	--with-http_random_index_module \
+	--with-http_secure_link_module \
 	--with-http_stub_status_module \
+	--with-http_ssl_module \
 	--without-http_auth_basic_module \
-	--without-http-cache \
 	--with-mail \
+	--with-mail_ssl_module \
 	--with-pcre=../../pcre \
 	--with-zlib=../../zlib \
-	--add-module=../addon/ngx_dbd_module \
-	--add-module=../addon/ngx_udp_module \
-	--add-module=../addon/ngx_udp_dns_module \
+	--with-openssl=../../openssl \
+	--with-openssl-opt=enable-tlsext \
 	--with-debug
 
 nmake -f objs/Makefile

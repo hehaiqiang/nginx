@@ -10,9 +10,11 @@
 
 #define NGX_HAVE_FIONBIO      1
 
-#define NGX_HAVE_SENDFILE     0
+#define NGX_HAVE_SENDFILE     1
 
 #define NGX_HAVE_FILE_AIO     1
+
+#define NGX_HAVE_AIO_SENDFILE 0
 
 #define NGX_LISTEN_BACKLOG    SOMAXCONN
 
@@ -136,8 +138,6 @@ typedef uint64_t          uintptr_t;
 
 
 #if 0
-
-#define NGX_HAVE_AIO_SENDFILE        0
 
 #define NGX_HAVE_GMTOFF              0
 
