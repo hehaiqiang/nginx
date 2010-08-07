@@ -89,7 +89,7 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     u_char            *p;
     size_t             size;
     ngx_int_t          i;
-    ngx_uint_t         n;
+    ngx_uint_t         n, sigio;
     sigset_t           set;
     struct itimerval   itv;
     ngx_uint_t         live;
@@ -142,11 +142,13 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
     ngx_new_binary = 0;
     delay = 0;
+    sigio = 0;
     live = 1;
 
     for ( ;; ) {
         if (delay) {
             if (ngx_sigalrm) {
+                sigio = 0;
                 delay *= 2;
                 ngx_sigalrm = 0;
             }
@@ -171,7 +173,8 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
         ngx_time_update();
 
-        ngx_log_debug0(NGX_LOG_DEBUG_EVENT, cycle->log, 0, "wake up");
+        ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
+                       "wake up, sigio %i", sigio);
 
         if (ngx_reap) {
             ngx_reap = 0;
@@ -188,6 +191,13 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
             if (delay == 0) {
                 delay = 50;
             }
+
+            if (sigio) {
+                sigio--;
+                continue;
+            }
+
+            sigio = ccf->worker_processes + 2 /* cache processes */;
 
             if (delay > 1000) {
                 ngx_signal_worker_processes(cycle, SIGKILL);
@@ -308,7 +318,6 @@ ngx_single_process_cycle(ngx_cycle_t *cycle)
             }
 
             ngx_master_process_exit(cycle);
-            return;
         }
 
         if (ngx_reconfigure) {
@@ -693,6 +702,8 @@ ngx_master_process_exit(ngx_cycle_t *cycle)
         }
     }
 
+    ngx_close_listening_sockets(cycle);
+
     /*
      * Copy ngx_cycle->log related data to the special static exit cycle,
      * log, and log file structures enough to allow a signal handler to log.
@@ -718,6 +729,8 @@ ngx_worker_process_cycle(ngx_cycle_t *cycle, void *data)
 #if 0
     ngx_uint_t         i;
     ngx_connection_t  *c;
+
+    ngx_process = NGX_PROCESS_WORKER;
 
     ngx_worker_process_init(cycle, 1);
 
@@ -835,8 +848,6 @@ ngx_worker_process_init(ngx_cycle_t *cycle, ngx_uint_t priority)
     struct rlimit     rlmt;
     ngx_core_conf_t  *ccf;
     ngx_listening_t  *ls;
-
-    ngx_process = NGX_PROCESS_WORKER;
 
     if (ngx_set_environment(cycle, NULL) == NULL) {
         /* fatal */
@@ -1305,6 +1316,8 @@ ngx_cache_manager_process_cycle(ngx_cycle_t *cycle, void *data)
     ngx_event_t   ev;
 
     cycle->connection_n = 512;
+
+    ngx_process = NGX_PROCESS_HELPER;
 
     ngx_worker_process_init(cycle, 0);
 

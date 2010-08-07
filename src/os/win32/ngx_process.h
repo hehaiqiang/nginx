@@ -36,10 +36,10 @@ typedef struct {
 
 
 typedef struct {
-    char               *path;
-    char               *name;
-    char *const        *argv;
-    char *const        *envp;
+    char         *path;
+    char         *name;
+    char *const  *argv;
+    char *const  *envp;
 } ngx_exec_ctx_t;
 
 
@@ -54,7 +54,9 @@ typedef struct {
 
 #define ngx_getpid   GetCurrentProcessId
 
+#ifndef ngx_log_pid
 #define ngx_log_pid  ngx_pid
+#endif
 
 
 ngx_pid_t ngx_spawn_process(ngx_cycle_t *cycle,

@@ -1,0 +1,543 @@
+
+# Copyright (C) Ngwsx
+
+
+NGX_SLN=$NGX_OBJS/nginx.sln
+NGX_VCPROJ=$NGX_OBJS/nginx.vcproj
+
+
+echo "creating $NGX_SLN"
+
+cat << END                                                     > $NGX_SLN
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nginx", "nginx.vcproj", "{DA97E9B5-A932-4041-BC4F-679CAB048297}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA97E9B5-A932-4041-BC4F-679CAB048297}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA97E9B5-A932-4041-BC4F-679CAB048297}.Debug|Win32.Build.0 = Debug|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
+END
+
+
+echo "creating $NGX_VCPROJ"
+
+ngx_objs_dir=$NGX_OBJS$ngx_regex_dirsep
+ngx_use_pch=`echo $NGX_USE_PCH | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+
+cat << END                                                     > $NGX_VCPROJ
+<?xml version="1.0" encoding="gb2312"?>
+<VisualStudioProject Name="nginx"
+	ProjectType="Visual C++"
+	Version="9.00"
+	ProjectGUID="{DA97E9B5-A932-4041-BC4F-679CAB048297}"
+	RootNamespace="nginx"
+	Keyword="Win32Proj"
+	TargetFrameworkVersion="196613">
+	<Platforms>
+		<Platform Name="Win32" />
+	</Platforms>
+	<Configurations>
+		<Configuration Name="Debug|Win32"
+			OutputDirectory="../../$NGX_OBJS"
+			IntermediateDirectory="../../$NGX_OBJS"
+			ConfigurationType="1"
+			CharacterSet="0"
+			EnableManagedIncrementalBuild="0">
+END
+
+
+for ngx_inc in $CORE_INCS
+do
+    ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+done
+
+for ngx_inc in $NGX_OBJS
+do
+    ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_incs="$ngx_incs;../../$ngx_inc"
+done
+
+for ngx_inc in $HTTP_INCS
+do
+    ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+done
+
+for ngx_inc in $MAIL_INCS
+do
+    ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+done
+
+
+cat << END                                                    >> $NGX_VCPROJ
+			<Tool Name="VCCLCompilerTool"
+				UseUnicodeResponseFiles="false"
+				AdditionalOptions="$CFLAGS"
+				AdditionalIncludeDirectories="$ngx_incs"
+				AdditionalUsingDirectories="\$(NOINHERIT)"
+				MinimalRebuild="false"
+				ExceptionHandling="0"
+				BasicRuntimeChecks="0"
+				DebugInformationFormat="3"
+				CompileAs="0"
+				DisableSpecificWarnings="\$(NOINHERIT)"
+				ForcedIncludeFiles="\$(NOINHERIT)"
+				ForcedUsingFiles="\$(NOINHERIT)"
+				UndefinePreprocessorDefinitions="\$(NOINHERIT)"
+				ErrorReporting="0" />
+END
+
+
+ngx_all_srcs="$CORE_SRCS"
+
+
+# the core dependences and include pathes
+
+ngx_deps=`echo $CORE_DEPS $NGX_AUTO_CONFIG_H $NGX_PCH \
+    | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
+          -e "s/\//$ngx_regex_dirsep/g"`
+
+ngx_incs=`echo $CORE_INCS $NGX_OBJS \
+    | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont$ngx_include_opt\1/g" \
+          -e "s/\//$ngx_regex_dirsep/g"`
+
+
+# the http dependences and include pathes
+
+if [ $HTTP = YES ]; then
+
+    ngx_all_srcs="$ngx_all_srcs $HTTP_SRCS"
+
+    ngx_deps=`echo $HTTP_DEPS \
+        | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
+              -e "s/\//$ngx_regex_dirsep/g"`
+
+    ngx_incs=`echo $HTTP_INCS \
+        | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont$ngx_include_opt\1/g" \
+              -e "s/\//$ngx_regex_dirsep/g"`
+
+fi
+
+
+# the mail dependences and include pathes
+
+if [ $MAIL = YES ]; then
+
+    ngx_all_srcs="$ngx_all_srcs $MAIL_SRCS"
+
+    ngx_deps=`echo $MAIL_DEPS \
+        | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
+              -e "s/\//$ngx_regex_dirsep/g"`
+
+    ngx_incs=`echo $MAIL_INCS \
+        | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont$ngx_include_opt\1/g" \
+              -e "s/\//$ngx_regex_dirsep/g"`
+
+fi
+
+
+ngx_all_srcs="$ngx_all_srcs $NGX_MISC_SRCS"
+
+
+# nginx
+
+ngx_all_srcs=`echo $ngx_all_srcs | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+for ngx_src in $NGX_ADDON_SRCS
+do
+    ngx_obj="addon/`basename \`dirname $ngx_src\``"
+
+    test -d $NGX_OBJS/$ngx_obj || mkdir -p $NGX_OBJS/$ngx_obj
+
+    ngx_obj=`echo $ngx_obj/\`basename $ngx_src\` \
+        | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+    ngx_all_srcs="$ngx_all_srcs $ngx_obj"
+done
+
+ngx_all_objs=`echo $ngx_all_srcs \
+    | sed -e "s#\([^ ]*\.\)cpp#$NGX_OBJS\/\1$ngx_objext#g" \
+          -e "s#\([^ ]*\.\)cc#$NGX_OBJS\/\1$ngx_objext#g" \
+          -e "s#\([^ ]*\.\)c#$NGX_OBJS\/\1$ngx_objext#g" \
+          -e "s#\([^ ]*\.\)S#$NGX_OBJS\/\1$ngx_objext#g"`
+
+ngx_modules_c=`echo $NGX_MODULES_C | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+ngx_modules_obj=`echo $ngx_modules_c | sed -e "s/\(.*\.\)c/\1$ngx_objext/"`
+
+
+if test -n "$NGX_RES"; then
+   ngx_res=$NGX_RES
+else
+   ngx_res="$NGX_RC $NGX_ICONS"
+   ngx_rcc=`echo $NGX_RCC | sed -e "s/\//$ngx_regex_dirsep/g"`
+fi
+
+ngx_deps=`echo $ngx_all_objs $ngx_modules_obj $ngx_res $LINK_DEPS \
+    | sed -e "s/  *\([^ ][^ ]*\)/$ngx_regex_cont\1/g" \
+          -e "s/\//$ngx_regex_dirsep/g"`
+
+ngx_objs=`echo $ngx_all_objs $ngx_modules_obj \
+    | sed -e "s/  *\([^ ][^ ]*\)/$ngx_long_regex_cont\1/g" \
+          -e "s/\//$ngx_regex_dirsep/g"`
+
+if test -n "$NGX_LD_OPT$CORE_LIBS"; then
+    ngx_libs=`echo $NGX_LD_OPT $CORE_LIBS \
+        | sed -e "s/\//$ngx_regex_dirsep/g" -e "s/^/$ngx_long_regex_cont/"`
+fi
+
+ngx_link=${CORE_LINK:+`echo $CORE_LINK \
+    | sed -e "s/\//$ngx_regex_dirsep/g" -e "s/^/$ngx_long_regex_cont/"`}
+
+
+ngx_libs=
+
+for ngx_lib in $CORE_LIBS
+do
+    ngx_lib=`echo $ngx_lib | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+    if [ -z `echo $ngx_lib | grep "/"` ]; then
+        ngx_libs="$ngx_libs $ngx_lib"
+    else
+        ngx_libs="$ngx_libs ../../$ngx_lib"
+    fi
+done
+
+
+cat << END                                                    >> $NGX_VCPROJ
+			<Tool Name="VCLinkerTool"
+				UseUnicodeResponseFiles="false"
+				AdditionalOptions="-nodefaultlib:oldnames.lib -subsystem:windows -debug"
+				AdditionalDependencies="$ngx_libs \$(NOINHERIT)"
+				ShowProgress="0"
+				OutputFile="../../$NGX_OBJS/nginx.exe"
+				LinkIncremental="0"
+				GenerateManifest="false"
+				AdditionalManifestDependencies="\$(NOINHERIT)"
+				EnableUAC="false"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames=""
+				AddModuleNamesToAssembly="\$(NOINHERIT)"
+				EmbedManagedResourceFile="\$(NOINHERIT)"
+				ForceSymbolReferences="\$(NOINHERIT)"
+				DelayLoadDLLs="\$(NOINHERIT)"
+				AssemblyLinkResource="\$(NOINHERIT)"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				RandomizedBaseAddress="0"
+				DataExecutionPrevention="0"
+				TargetMachine="0"
+				ErrorReporting="0" />
+END
+
+
+cat << END                                                    >> $NGX_VCPROJ
+		</Configuration>
+	</Configurations>
+	<Files>
+END
+
+
+# ngx_modules.c
+
+if test -n "$NGX_PCH"; then
+    ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) $ngx_use_pch \$(ALL_INCS)"
+else
+    ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) \$(CORE_INCS)"
+fi
+
+cat << END                                                    >> $NGX_VCPROJ
+		<File RelativePath="../../$ngx_modules_c">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VCCLCompilerTool"
+                                        UsePrecompiledHeader="2"
+					PrecompiledHeaderThrough="ngx_config.h"
+					PrecompiledHeaderFile="../../$NGX_PCH"
+					ObjectFile="../../$ngx_modules_obj" />
+			</FileConfiguration>
+		</File>
+END
+
+
+# the core sources
+
+cat << END                                                    >> $NGX_VCPROJ
+		<Filter Name="core">
+END
+
+for ngx_src in $CORE_SRCS
+do
+    ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_obj=`echo $ngx_src \
+        | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
+              -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
+              -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
+              -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
+
+    cat << END                                                >> $NGX_VCPROJ
+			<File RelativePath="../../../win32/$ngx_src">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+						PrecompiledHeaderThrough="ngx_config.h"
+						PrecompiledHeaderFile="../../$NGX_PCH"
+						ObjectFile="../../../win32/$ngx_obj" />
+				</FileConfiguration>
+			</File>
+END
+
+done
+
+cat << END                                                    >> $NGX_VCPROJ
+		</Filter>
+END
+
+
+# the http sources
+
+if [ $HTTP = YES ]; then
+
+    if test -n "$NGX_PCH"; then
+        ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) $ngx_use_pch \$(ALL_INCS)"
+    else
+        ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) \$(CORE_INCS) \$(HTTP_INCS)"
+        ngx_perl_cc="\$(CC) $ngx_compile_opt \$(NGX_PERL_CFLAGS) "
+        ngx_perl_cc="$ngx_perl_cc \$(CORE_INCS) \$(HTTP_INCS)"
+    fi
+
+    cat << END                                                >> $NGX_VCPROJ
+		<Filter Name="http">
+END
+
+    for ngx_source in $HTTP_SRCS
+    do
+        ngx_src=`echo $ngx_source | sed -e "s/\//$ngx_regex_dirsep/g"`
+        ngx_obj=`echo $ngx_src \
+            | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
+
+        cat << END                                            >> $NGX_VCPROJ
+			<File RelativePath="../../../win32/$ngx_src">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+						PrecompiledHeaderThrough="ngx_config.h"
+						PrecompiledHeaderFile="../../$NGX_PCH"
+						ObjectFile="../../../win32/$ngx_obj" />
+				</FileConfiguration>
+			</File>
+END
+     done
+
+    cat << END                                                >> $NGX_VCPROJ
+		</Filter>
+END
+
+fi
+
+
+# the mail sources
+
+if [ $MAIL = YES ]; then
+
+    if test -n "$NGX_PCH"; then
+        ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) $ngx_use_pch \$(ALL_INCS)"
+    else
+        ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) \$(CORE_INCS) \$(MAIL_INCS)"
+    fi
+
+    cat << END                                                >> $NGX_VCPROJ
+		<Filter Name="mail">
+END
+
+    for ngx_src in $MAIL_SRCS
+    do
+        ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
+        ngx_obj=`echo $ngx_src \
+            | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
+
+        cat << END                                            >> $NGX_VCPROJ
+			<File RelativePath="../../../win32/$ngx_src">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+						PrecompiledHeaderThrough="ngx_config.h"
+						PrecompiledHeaderFile="../../$NGX_PCH"
+						ObjectFile="../../../win32/$ngx_obj" />
+				</FileConfiguration>
+			</File>
+END
+     done
+
+cat << END                                                    >> $NGX_VCPROJ
+		</Filter>
+END
+
+fi
+
+
+# the misc sources
+
+if test -n "$NGX_MISC_SRCS"; then
+
+    ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) $ngx_use_pch \$(ALL_INCS)"
+
+    cat << END                                                >> $NGX_VCPROJ
+		<Filter Name="misc">
+END
+
+    for ngx_src in $NGX_MISC_SRCS
+    do
+        ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
+        ngx_obj=`echo $ngx_src \
+            | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
+
+        cat << END                                            >> $NGX_VCPROJ
+			<File RelativePath="../../../win32/$ngx_src">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+						PrecompiledHeaderThrough="ngx_config.h"
+						PrecompiledHeaderFile="../../$NGX_PCH"
+						ObjectFile="../../../win32/$ngx_obj" />
+				</FileConfiguration>
+			</File>
+END
+     done
+
+    cat << END                                                >> $NGX_VCPROJ
+		</Filter>
+END
+
+fi
+
+
+# the addons sources
+
+if test -n "$NGX_ADDON_SRCS"; then
+
+    ngx_cc="\$(CC) $ngx_compile_opt \$(CFLAGS) $ngx_use_pch \$(ALL_INCS)"
+
+    cat << END                                                >> $NGX_VCPROJ
+		<Filter Name="addon">
+END
+
+    for ngx_src in $NGX_ADDON_SRCS
+    do
+        ngx_obj="addon/`basename \`dirname $ngx_src\``"
+
+        ngx_obj=`echo $ngx_obj/\`basename $ngx_src\` \
+            | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+        ngx_obj=`echo $ngx_obj \
+            | sed -e "s#^\(.*\.\)cpp\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)cc\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)c\\$#$ngx_objs_dir\1$ngx_objext#g" \
+                  -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
+
+        ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+        cat << END                                            >> $NGX_VCPROJ
+			<File RelativePath="../../$ngx_src">
+				<FileConfiguration Name="Debug|Win32">
+					<Tool Name="VCCLCompilerTool"
+						UsePrecompiledHeader="2"
+						PrecompiledHeaderThrough="ngx_config.h"
+						PrecompiledHeaderFile="../../$NGX_PCH"
+						ObjectFile="../../$ngx_obj" />
+				</FileConfiguration>
+			</File>
+END
+     done
+
+    cat << END                                                >> $NGX_VCPROJ
+		</Filter>
+END
+
+fi
+
+
+# the addons config.make
+
+if test -n "$NGX_ADDONS"; then
+
+    for ngx_addon_dir in $NGX_ADDONS
+    do
+        if test -f $ngx_addon_dir/config.make; then
+            . $ngx_addon_dir/config.make
+        fi
+    done
+fi
+
+
+# Win32 resource file
+
+if test -n "$NGX_RES"; then
+
+    ngx_res=`echo "$NGX_RES:	$NGX_RC $NGX_ICONS" \
+                 | sed -e "s/\//$ngx_regex_dirsep/g"`
+    ngx_rcc=`echo $NGX_RCC | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+    cat << END                                                >> $NGX_VCPROJ
+		<File RelativePath="../../../win32/$NGX_WIN32_RC">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VCResourceCompilerTool"
+					ResourceOutputFileName="../../$NGX_RES" />
+			</FileConfiguration>
+		</File>
+END
+
+fi
+
+
+# the precompiled headers
+
+if test -n "$NGX_PCH"; then
+    echo "#include <ngx_config.h>" > $NGX_OBJS/ngx_pch.c
+
+    ngx_pch="src/core/ngx_config.h $OS_CONFIG $NGX_OBJS/ngx_auto_config.h"
+    ngx_pch=`echo "$NGX_PCH:	$ngx_pch" | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+    ngx_src="\$(CC) \$(CFLAGS) $NGX_BUILD_PCH $ngx_compile_opt \$(ALL_INCS)"
+    ngx_src="$ngx_src $ngx_objout$NGX_OBJS/ngx_pch.obj $NGX_OBJS/ngx_pch.c"
+    ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
+
+    cat << END                                                >> $NGX_VCPROJ
+		<File RelativePath="../../$NGX_OBJS/ngx_pch.c">
+			<FileConfiguration Name="Debug|Win32">
+				<Tool Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="ngx_config.h"
+					PrecompiledHeaderFile="../../$NGX_PCH"
+					ObjectFile="../../$NGX_OBJS/ngx_pch.obj" />
+			</FileConfiguration>
+		</File>
+END
+
+fi
+
+
+cat << END                                                    >> $NGX_VCPROJ
+	</Files>
+</VisualStudioProject>
+END

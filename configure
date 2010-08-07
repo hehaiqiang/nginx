@@ -109,4 +109,6 @@ fi
 have=NGX_USER value="\"$NGX_USER\"" . auto/define
 have=NGX_GROUP value="\"$NGX_GROUP\"" . auto/define
 
+. auto/vcproj
+
 . auto/summary
