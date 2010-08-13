@@ -9,7 +9,7 @@
 # optimizations
 
 # maximize speed, equivalent to -Og -Oi -Ot -Oy -Ob2 -Gs -GF -Gy
-CFLAGS="$CFLAGS -O2"
+#CFLAGS="$CFLAGS -O2"
 
 # enable global optimization
 #CFLAGS="$CFLAGS -Og"

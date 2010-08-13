@@ -3,14 +3,28 @@
 
 
 NGX_SLN=$NGX_OBJS/nginx.sln
+NGX_SLN_TEMP=$NGX_OBJS/nginx_temp.sln
 NGX_VCPROJ=$NGX_OBJS/nginx.vcproj
+
+#NGX_SLN_VER="9.00"
+NGX_SLN_VER="10.00"
+#NGX_SLN_VER="11.00"
+
+#NGX_SLN_VER_STR="Visual Studio 2005"
+NGX_SLN_VER_STR="Visual Studio 2008"
+#NGX_SLN_VER_STR="Visual C++ Express 2010"
+
+#NGX_VCPROJ_VER="8.00"
+NGX_VCPROJ_VER="9.00"
+#NGX_VCPROJ_VER="10.00"
 
 
 echo "creating $NGX_SLN"
 
-cat << END                                                     > $NGX_SLN
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+
+cat << END                                                     > $NGX_SLN_TEMP
+Microsoft Visual Studio Solution File, Format Version $NGX_SLN_VER
+# $NGX_SLN_VER_STR
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nginx", "nginx.vcproj", "{DA97E9B5-A932-4041-BC4F-679CAB048297}"
 EndProject
 Global
@@ -27,6 +41,9 @@ Global
 EndGlobal
 END
 
+sed 's/$/\r/' $NGX_SLN_TEMP > $NGX_SLN
+rm $NGX_SLN_TEMP
+
 
 echo "creating $NGX_VCPROJ"
 
@@ -38,7 +55,7 @@ cat << END                                                     > $NGX_VCPROJ
 <?xml version="1.0" encoding="gb2312"?>
 <VisualStudioProject Name="nginx"
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="$NGX_VCPROJ_VER"
 	ProjectGUID="{DA97E9B5-A932-4041-BC4F-679CAB048297}"
 	RootNamespace="nginx"
 	Keyword="Win32Proj"
