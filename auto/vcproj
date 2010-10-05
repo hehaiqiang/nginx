@@ -65,24 +65,31 @@ cat << END                                                     > $NGX_VCPROJ
 	</Platforms>
 	<Configurations>
 		<Configuration Name="Debug|Win32"
-			OutputDirectory="../../$NGX_OBJS"
-			IntermediateDirectory="../../$NGX_OBJS"
+			OutputDirectory="$NGX_OBJS"
+			IntermediateDirectory="$NGX_OBJS"
 			ConfigurationType="1"
 			CharacterSet="0"
 			EnableManagedIncrementalBuild="0">
 END
 
 
+ngx_incs=
+
 for ngx_inc in $CORE_INCS
 do
     ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
-    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+
+    if [ -z `echo $ngx_inc | grep ":"` ]; then
+        ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+    else
+        ngx_incs="$ngx_incs;$ngx_inc"
+    fi
 done
 
 for ngx_inc in $NGX_OBJS
 do
     ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
-    ngx_incs="$ngx_incs;../../$ngx_inc"
+    ngx_incs="$ngx_incs;$ngx_inc"
 done
 
 for ngx_inc in $HTTP_INCS
@@ -225,7 +232,8 @@ for ngx_lib in $CORE_LIBS
 do
     ngx_lib=`echo $ngx_lib | sed -e "s/\//$ngx_regex_dirsep/g"`
 
-    if [ -z `echo $ngx_lib | grep "/"` ]; then
+    if [ -n `echo $ngx_lib | grep ":"` ] || [ -n `echo $ngx_lib | grep "/"` ];
+    then
         ngx_libs="$ngx_libs $ngx_lib"
     else
         ngx_libs="$ngx_libs ../../$ngx_lib"
@@ -239,7 +247,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				AdditionalOptions="-nodefaultlib:oldnames.lib -subsystem:windows -debug"
 				AdditionalDependencies="$ngx_libs \$(NOINHERIT)"
 				ShowProgress="0"
-				OutputFile="../../$NGX_OBJS/nginx.exe"
+				OutputFile="$NGX_OBJS/nginx.exe"
 				LinkIncremental="0"
 				GenerateManifest="false"
 				AdditionalManifestDependencies="\$(NOINHERIT)"
@@ -276,13 +284,13 @@ else
 fi
 
 cat << END                                                    >> $NGX_VCPROJ
-		<File RelativePath="../../$ngx_modules_c">
+		<File RelativePath="$ngx_modules_c">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VCCLCompilerTool"
                                         UsePrecompiledHeader="2"
 					PrecompiledHeaderThrough="ngx_config.h"
-					PrecompiledHeaderFile="../../$NGX_PCH"
-					ObjectFile="../../$ngx_modules_obj" />
+					PrecompiledHeaderFile="$NGX_PCH"
+					ObjectFile="$ngx_modules_obj" />
 			</FileConfiguration>
 		</File>
 END
@@ -309,8 +317,8 @@ do
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="ngx_config.h"
-						PrecompiledHeaderFile="../../$NGX_PCH"
-						ObjectFile="../../../win32/$ngx_obj" />
+						PrecompiledHeaderFile="$NGX_PCH"
+						ObjectFile="$ngx_obj" />
 				</FileConfiguration>
 			</File>
 END
@@ -353,8 +361,8 @@ END
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="ngx_config.h"
-						PrecompiledHeaderFile="../../$NGX_PCH"
-						ObjectFile="../../../win32/$ngx_obj" />
+						PrecompiledHeaderFile="$NGX_PCH"
+						ObjectFile="$ngx_obj" />
 				</FileConfiguration>
 			</File>
 END
@@ -396,8 +404,8 @@ END
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="ngx_config.h"
-						PrecompiledHeaderFile="../../$NGX_PCH"
-						ObjectFile="../../../win32/$ngx_obj" />
+						PrecompiledHeaderFile="$NGX_PCH"
+						ObjectFile="$ngx_obj" />
 				</FileConfiguration>
 			</File>
 END
@@ -435,8 +443,8 @@ END
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="ngx_config.h"
-						PrecompiledHeaderFile="../../$NGX_PCH"
-						ObjectFile="../../../win32/$ngx_obj" />
+						PrecompiledHeaderFile="$NGX_PCH"
+						ObjectFile="$ngx_obj" />
 				</FileConfiguration>
 			</File>
 END
@@ -475,13 +483,13 @@ END
         ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="../../$ngx_src">
+			<File RelativePath="$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
 						PrecompiledHeaderThrough="ngx_config.h"
-						PrecompiledHeaderFile="../../$NGX_PCH"
-						ObjectFile="../../$ngx_obj" />
+						PrecompiledHeaderFile="$NGX_PCH"
+						ObjectFile="$ngx_obj" />
 				</FileConfiguration>
 			</File>
 END
@@ -519,7 +527,7 @@ if test -n "$NGX_RES"; then
 		<File RelativePath="../../../win32/$NGX_WIN32_RC">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VCResourceCompilerTool"
-					ResourceOutputFileName="../../$NGX_RES" />
+					ResourceOutputFileName="$NGX_RES" />
 			</FileConfiguration>
 		</File>
 END
@@ -540,13 +548,13 @@ if test -n "$NGX_PCH"; then
     ngx_src=`echo $ngx_src | sed -e "s/\//$ngx_regex_dirsep/g"`
 
     cat << END                                                >> $NGX_VCPROJ
-		<File RelativePath="../../$NGX_OBJS/ngx_pch.c">
+		<File RelativePath="$NGX_OBJS/ngx_pch.c">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VCCLCompilerTool"
 					UsePrecompiledHeader="1"
 					PrecompiledHeaderThrough="ngx_config.h"
-					PrecompiledHeaderFile="../../$NGX_PCH"
-					ObjectFile="../../$NGX_OBJS/ngx_pch.obj" />
+					PrecompiledHeaderFile="$NGX_PCH"
+					ObjectFile="$NGX_OBJS/ngx_pch.obj" />
 			</FileConfiguration>
 		</File>
 END
