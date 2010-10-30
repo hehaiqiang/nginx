@@ -9,7 +9,7 @@
 # optimizations
 
 # maximize speed, equivalent to -Og -Oi -Ot -Oy -Ob2 -Gs -GF -Gy
-#CFLAGS="$CFLAGS -O2"
+CFLAGS="$CFLAGS -O2"
 
 # enable global optimization
 #CFLAGS="$CFLAGS -Og"
@@ -97,8 +97,8 @@ CORE_LINK="$CORE_LINK -subsystem:windows"
 # msvc8 under Wine issues
 #     Program database manager mismatch; please check your installation
 #if [ $NGX_CC_NAME != msvc8 ]; then
-   CFLAGS="$CFLAGS -Zi"
-   CORE_LINK="$CORE_LINK -debug"
+#   CFLAGS="$CFLAGS -Zi"
+#   CORE_LINK="$CORE_LINK -debug"
 #fi
 
 
