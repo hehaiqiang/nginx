@@ -131,7 +131,8 @@ typedef int               ngx_err_t;
 #define ngx_set_socket_errno(err)  WSASetLastError(err)
 
 
-u_char *ngx_strerror_r(int err, u_char *errstr, size_t size);
+u_char *ngx_strerror(ngx_err_t err, u_char *errstr, size_t size);
+ngx_uint_t ngx_strerror_init(void);
 
 
 #endif /* _NGX_ERRNO_H_INCLUDED_ */

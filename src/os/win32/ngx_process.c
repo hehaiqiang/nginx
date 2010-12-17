@@ -1189,7 +1189,7 @@ ngx_message_box(u_char *caption, ngx_uint_t type, ngx_err_t err,
             p = ngx_snprintf(p, last - p, " (%d: ", err);
         }
 
-        p = ngx_strerror_r(err, p, last - p);
+        p = ngx_strerror(err, p, last - p);
 
         if (p < last) {
             *p++ = ')';

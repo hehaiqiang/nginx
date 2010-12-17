@@ -9,7 +9,7 @@
 
 
 u_char *
-ngx_strerror_r(int err, u_char *errstr, size_t size)
+ngx_strerror(ngx_err_t err, u_char *errstr, size_t size)
 {
     if (size == 0) {
         return errstr;
@@ -36,4 +36,11 @@ ngx_strerror_r(int err, u_char *errstr, size_t size)
     *errstr = '\0';
 
     return errstr;
+}
+
+
+ngx_uint_t
+ngx_strerror_init(void)
+{
+    return NGX_OK;
 }
