@@ -186,7 +186,6 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
 
     SSL_CTX_set_options(ssl->ctx, SSL_OP_MICROSOFT_SESS_ID_BUG);
     SSL_CTX_set_options(ssl->ctx, SSL_OP_NETSCAPE_CHALLENGE_BUG);
-    SSL_CTX_set_options(ssl->ctx, SSL_OP_NETSCAPE_REUSE_CIPHER_CHANGE_BUG);
 
     /* server side options */
 
@@ -611,7 +610,7 @@ ngx_ssl_handshake(ngx_connection_t *c)
 #if (NGX_DEBUG)
         {
         char         buf[129], *s, *d;
-#if OPENSSL_VERSION_NUMBER >= 0x1000000fL
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
         const
 #endif
         SSL_CIPHER  *cipher;
