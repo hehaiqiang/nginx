@@ -1,0 +1,33 @@
+
+# Copyright (C) Ngwsx
+
+
+PCRE_CONF_ARGS= \
+	--with-pcre=$(ADDON_DIR)/../../../pcre
+
+ZLIB_CONF_ARGS= \
+	--with-zlib=$(ADDON_DIR)/../../../zlib
+
+OPENSSL_CONF_ARGS= \
+	--with-openssl=$(ADDON_DIR)/../../openssl \
+	--with-openssl-opt=enable-tlsext
+
+CORE_CONF_ARGS= \
+	--builddir=$(ADDON_DIR)/build \
+	--prefix= \
+	--sbin-path=$(NGINX_BIN) \
+	--conf-path=conf/$(NGINX_BIN).conf \
+	--pid-path=logs/$(NGINX_BIN).pid \
+	--error-log-path=logs/$(NGINX_BIN)_error.log
+
+HTTP_CONF_ARGS= \
+	--http-log-path=logs/$(NGINX_BIN)_access.log \
+	--http-client-body-temp-path=temp/client_body_temp \
+	--http-proxy-temp-path=temp/proxy_temp \
+	--http-fastcgi-temp-path=temp/fastcgi_temp \
+	--http-uwsgi-temp-path=temp/uwsgi_temp \
+	--http-scgi-temp-path=temp/scgi_temp \
+	--with-http_stub_status_module
+
+MAIL_CONF_ARGS= \
+	--with-mail

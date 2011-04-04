@@ -114,6 +114,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				MinimalRebuild="false"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="0"
+                                ProgramDataBaseFileName="$NGX_OBJS/nginx.pdb"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="\$(NOINHERIT)"
@@ -260,6 +261,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				DelayLoadDLLs="\$(NOINHERIT)"
 				AssemblyLinkResource="\$(NOINHERIT)"
 				GenerateDebugInformation="true"
+                                ProgramDatabaseFile="$NGX_OBJS/nginx.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="0"
 				DataExecutionPrevention="0"
@@ -312,7 +314,7 @@ do
               -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
     cat << END                                                >> $NGX_VCPROJ
-			<File RelativePath="../../../win32/$ngx_src">
+			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -356,7 +358,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="../../../win32/$ngx_src">
+			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -399,7 +401,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="../../../win32/$ngx_src">
+			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -438,7 +440,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="../../../win32/$ngx_src">
+			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"

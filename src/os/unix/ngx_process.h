@@ -62,6 +62,7 @@ ngx_pid_t ngx_spawn_process(ngx_cycle_t *cycle,
     ngx_spawn_proc_pt proc, void *data, char *name, ngx_int_t respawn);
 ngx_pid_t ngx_execute(ngx_cycle_t *cycle, ngx_exec_ctx_t *ctx);
 ngx_int_t ngx_init_signals(ngx_log_t *log);
+void ngx_process_get_status(void);
 void ngx_debug_point(void);
 
 
