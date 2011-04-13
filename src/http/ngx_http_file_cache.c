@@ -1030,6 +1030,7 @@ ngx_http_file_cache_forced_expire(ngx_http_file_cache_t *cache)
 
         if (fcn->count == 0) {
             ngx_http_file_cache_delete(cache, q, name);
+            wait = 0;
 
         } else {
             if (--tries) {
@@ -1194,7 +1195,7 @@ ngx_http_file_cache_manager(void *data)
     ngx_http_file_cache_t  *cache = data;
 
     off_t   size;
-    time_t  next;
+    time_t  next, wait;
 
     next = ngx_http_file_cache_expire(cache);
 
@@ -1215,7 +1216,11 @@ ngx_http_file_cache_manager(void *data)
             return next;
         }
 
-        next = ngx_http_file_cache_forced_expire(cache);
+        wait = ngx_http_file_cache_forced_expire(cache);
+
+        if (wait > 0) {
+            return wait;
+        }
 
         if (ngx_http_file_cache_manager_sleep(cache) != NGX_OK) {
             return next;
