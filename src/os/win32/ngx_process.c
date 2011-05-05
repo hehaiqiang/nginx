@@ -1,118 +1,52 @@
 
 /*
- * Copyright (C) Ngwsx
+ * Copyright (C) Igor Sysoev
  */
 
 
 #include <ngx_config.h>
 #include <ngx_core.h>
-#include <ngx_event.h>
 
 
 #define NGX_SERVICE_NAME  "NGINX"
 
 
-typedef struct {
-     int     signo;
-     char   *signame;
-     char   *name;
-     void  (*handler)(int signo);
-} ngx_signal_t;
-
-
-static void ngx_execute_proc(ngx_cycle_t *cycle, void *data);
-static void ngx_signal_handler(int signo);
+extern int ngx_main(int argc, char *const *argv);
 
 static ngx_uint_t ngx_stdcall ngx_service_handler(ngx_uint_t ctl,
     ngx_uint_t type, void *data, void *ctx);
-
-extern int main(int argc, char *const *argv);
-
-static void ngx_stdcall ngx_service_main(int argc, char **argv);
+static void WINAPI ngx_service_main(DWORD argc, LPTSTR *argv);
 
 
-int                             ngx_argc;
-char                          **ngx_argv;
-char                          **ngx_os_argv;
+int              ngx_argc;
+char           **ngx_argv;
+char           **ngx_os_argv;
 
-ngx_int_t                       ngx_process_slot;
-ngx_socket_t                    ngx_channel;
-ngx_int_t                       ngx_last_process;
-ngx_process_t                   ngx_processes[NGX_MAX_PROCESSES];
+ngx_int_t        ngx_last_process;
+ngx_process_t    ngx_processes[NGX_MAX_PROCESSES];
 
-ngx_uint_t                      ngx_run_as_service;
+ngx_uint_t       ngx_run_as_service;
 
-
-static SERVICE_STATUS           ngx_ss;
-static SERVICE_STATUS_HANDLE    ngx_sshandle;
-
-
-#if 0
-
-ngx_signal_t  signals[] = {
-    { ngx_signal_value(NGX_RECONFIGURE_SIGNAL),
-      "SIG" ngx_value(NGX_RECONFIGURE_SIGNAL),
-      "reload",
-      ngx_signal_handler },
-
-    { ngx_signal_value(NGX_REOPEN_SIGNAL),
-      "SIG" ngx_value(NGX_REOPEN_SIGNAL),
-      "reopen",
-      ngx_signal_handler },
-
-    { ngx_signal_value(NGX_NOACCEPT_SIGNAL),
-      "SIG" ngx_value(NGX_NOACCEPT_SIGNAL),
-      "",
-      ngx_signal_handler },
-
-    { ngx_signal_value(NGX_TERMINATE_SIGNAL),
-      "SIG" ngx_value(NGX_TERMINATE_SIGNAL),
-      "stop",
-      ngx_signal_handler },
-
-    { ngx_signal_value(NGX_SHUTDOWN_SIGNAL),
-      "SIG" ngx_value(NGX_SHUTDOWN_SIGNAL),
-      "quit",
-      ngx_signal_handler },
-
-    { ngx_signal_value(NGX_CHANGEBIN_SIGNAL),
-      "SIG" ngx_value(NGX_CHANGEBIN_SIGNAL),
-      "",
-      ngx_signal_handler },
-
-    { SIGALRM, "SIGALRM", "", ngx_signal_handler },
-
-    { SIGINT, "SIGINT", "", ngx_signal_handler },
-
-    { SIGIO, "SIGIO", "", ngx_signal_handler },
-
-    { SIGCHLD, "SIGCHLD", "", ngx_signal_handler },
-
-    { SIGSYS, "SIGSYS, SIG_IGN", "", SIG_IGN },
-
-    { SIGPIPE, "SIGPIPE, SIG_IGN", "", SIG_IGN },
-
-    { 0, NULL, "", NULL }
-};
-#endif
+static SERVICE_STATUS         ngx_ss;
+static SERVICE_STATUS_HANDLE  ngx_sshandle;
 
 
 ngx_pid_t
-ngx_spawn_process(ngx_cycle_t *cycle, ngx_spawn_proc_pt proc, void *data,
-    char *name, ngx_int_t respawn)
+ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
 {
-#if 0
-    u_long     on;
-#endif
-    ngx_pid_t  pid;
-    ngx_int_t  s;
+    u_long          rc, n, code;
+    ngx_int_t       s;
+    ngx_pid_t       pid;
+    ngx_exec_ctx_t  ctx;
+    HANDLE          events[2];
+    char            file[MAX_PATH + 1];
 
     if (respawn >= 0) {
         s = respawn;
 
     } else {
         for (s = 0; s < ngx_last_process; s++) {
-            if (ngx_processes[s].pid == -1) {
+            if (ngx_processes[s].handle == NULL) {
                 break;
             }
         }
@@ -125,133 +59,130 @@ ngx_spawn_process(ngx_cycle_t *cycle, ngx_spawn_proc_pt proc, void *data,
         }
     }
 
+    n = GetModuleFileName(NULL, file, MAX_PATH);
 
-    if (respawn != NGX_PROCESS_DETACHED) {
-
-        /* Solaris 9 still has no AF_LOCAL */
-
-#if 0
-        if (socketpair(AF_UNIX, SOCK_STREAM, 0, ngx_processes[s].channel) == -1)
-        {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          "socketpair() failed while spawning \"%s\"", name);
-            return NGX_INVALID_PID;
-        }
-
-        ngx_log_debug2(NGX_LOG_DEBUG_CORE, cycle->log, 0,
-                       "channel %d:%d",
-                       ngx_processes[s].channel[0],
-                       ngx_processes[s].channel[1]);
-
-        if (ngx_nonblocking(ngx_processes[s].channel[0]) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          ngx_nonblocking_n " failed while spawning \"%s\"",
-                          name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        if (ngx_nonblocking(ngx_processes[s].channel[1]) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          ngx_nonblocking_n " failed while spawning \"%s\"",
-                          name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        on = 1;
-        if (ioctl(ngx_processes[s].channel[0], FIOASYNC, &on) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          "ioctl(FIOASYNC) failed while spawning \"%s\"", name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        if (fcntl(ngx_processes[s].channel[0], F_SETOWN, ngx_pid) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          "fcntl(F_SETOWN) failed while spawning \"%s\"", name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        if (fcntl(ngx_processes[s].channel[0], F_SETFD, FD_CLOEXEC) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          "fcntl(FD_CLOEXEC) failed while spawning \"%s\"",
-                           name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        if (fcntl(ngx_processes[s].channel[1], F_SETFD, FD_CLOEXEC) == -1) {
-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                          "fcntl(FD_CLOEXEC) failed while spawning \"%s\"",
-                           name);
-            ngx_close_channel(ngx_processes[s].channel, cycle->log);
-            return NGX_INVALID_PID;
-        }
-
-        ngx_channel = ngx_processes[s].channel[1];
-#endif
-
-    } else {
-        ngx_processes[s].channel[0] = -1;
-        ngx_processes[s].channel[1] = -1;
-    }
-
-    ngx_process_slot = s;
-
-
-    proc(cycle, data);
-
-    pid = ngx_processes[s].pid;
-
-    if (pid == -1) {
+    if (n == 0) {
+        ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                      "GetModuleFileName() failed");
         return NGX_INVALID_PID;
     }
 
-    ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "start %s %P", name, pid);
+    file[n] = '\0';
 
-    ngx_processes[s].exited = 0;
+    ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+                   "GetModuleFileName: \"%s\"", file);
+
+    ctx.path = file;
+    ctx.name = name;
+    ctx.args = GetCommandLine();
+    ctx.argv = NULL;
+    ctx.envp = NULL;
+
+    pid = ngx_execute(cycle, &ctx);
+
+    if (pid == NGX_INVALID_PID) {
+        return pid;
+    }
+
+    ngx_memzero(&ngx_processes[s], sizeof(ngx_process_t));
+
+    ngx_processes[s].handle = ctx.child;
+    ngx_processes[s].pid = pid;
+    ngx_processes[s].name = name;
+
+    ngx_sprintf(ngx_processes[s].term_event, "ngx_%s_term_%ul%Z", name, pid);
+    ngx_sprintf(ngx_processes[s].quit_event, "ngx_%s_quit_%ul%Z", name, pid);
+    ngx_sprintf(ngx_processes[s].reopen_event, "ngx_%s_reopen_%ul%Z",
+                name, pid);
+
+    events[0] = ngx_master_process_event;
+    events[1] = ctx.child;
+
+    rc = WaitForMultipleObjects(2, events, 0, 5000);
+
+    ngx_time_update();
+
+    ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+                   "WaitForMultipleObjects: %ul", rc);
+
+    switch (rc) {
+
+    case WAIT_OBJECT_0:
+
+        ngx_processes[s].term = OpenEvent(EVENT_MODIFY_STATE, 0,
+                                          (char *) ngx_processes[s].term_event);
+        if (ngx_processes[s].term == NULL) {
+            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                          "OpenEvent(\"%s\") failed",
+                          ngx_processes[s].term_event);
+            goto failed;
+        }
+
+        ngx_processes[s].quit = OpenEvent(EVENT_MODIFY_STATE, 0,
+                                          (char *) ngx_processes[s].quit_event);
+        if (ngx_processes[s].quit == NULL) {
+            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                          "OpenEvent(\"%s\") failed",
+                          ngx_processes[s].quit_event);
+            goto failed;
+        }
+
+        ngx_processes[s].reopen = OpenEvent(EVENT_MODIFY_STATE, 0,
+                                       (char *) ngx_processes[s].reopen_event);
+        if (ngx_processes[s].reopen == NULL) {
+            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                          "OpenEvent(\"%s\") failed",
+                          ngx_processes[s].reopen_event);
+            goto failed;
+        }
+
+        if (ResetEvent(ngx_master_process_event) == 0) {
+            ngx_log_error(NGX_LOG_ALERT, cycle->log, 0,
+                          "ResetEvent(\"%s\") failed",
+                          ngx_master_process_event_name);
+            goto failed;
+        }
+
+        break;
+
+    case WAIT_OBJECT_0 + 1:
+        if (GetExitCodeProcess(ctx.child, &code) == 0) {
+            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                          "GetExitCodeProcess(%P) failed", pid);
+        }
+
+        ngx_log_error(NGX_LOG_ALERT, cycle->log, 0,
+                      "%s process %P exited with code %Xul",
+                      name, pid, code);
+
+        goto failed;
+
+    case WAIT_TIMEOUT:
+        ngx_log_error(NGX_LOG_ALERT, cycle->log, 0,
+                      "the event \"%s\" was not signaled for 5s",
+                      ngx_master_process_event_name);
+        goto failed;
+
+    case WAIT_FAILED:
+        ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                      "WaitForSingleObject(\"%s\") failed",
+                      ngx_master_process_event_name);
+
+        goto failed;
+    }
 
     if (respawn >= 0) {
         return pid;
     }
 
-    ngx_processes[s].proc = proc;
-    ngx_processes[s].data = data;
-    ngx_processes[s].name = name;
-    ngx_processes[s].exiting = 0;
-
     switch (respawn) {
 
-    case NGX_PROCESS_NORESPAWN:
-        ngx_processes[s].respawn = 0;
-        ngx_processes[s].just_spawn = 0;
-        ngx_processes[s].detached = 0;
-        break;
-
-    case NGX_PROCESS_JUST_SPAWN:
-        ngx_processes[s].respawn = 0;
-        ngx_processes[s].just_spawn = 1;
-        ngx_processes[s].detached = 0;
-        break;
-
     case NGX_PROCESS_RESPAWN:
-        ngx_processes[s].respawn = 1;
         ngx_processes[s].just_spawn = 0;
-        ngx_processes[s].detached = 0;
         break;
 
     case NGX_PROCESS_JUST_RESPAWN:
-        ngx_processes[s].respawn = 1;
         ngx_processes[s].just_spawn = 1;
-        ngx_processes[s].detached = 0;
-        break;
-
-    case NGX_PROCESS_DETACHED:
-        ngx_processes[s].respawn = 0;
-        ngx_processes[s].just_spawn = 0;
-        ngx_processes[s].detached = 1;
         break;
     }
 
@@ -260,215 +191,68 @@ ngx_spawn_process(ngx_cycle_t *cycle, ngx_spawn_proc_pt proc, void *data,
     }
 
     return pid;
+
+failed:
+
+    if (ngx_processes[s].reopen) {
+        ngx_close_handle(ngx_processes[s].reopen);
+    }
+
+    if (ngx_processes[s].quit) {
+        ngx_close_handle(ngx_processes[s].quit);
+    }
+
+    if (ngx_processes[s].term) {
+        ngx_close_handle(ngx_processes[s].term);
+    }
+
+    TerminateProcess(ngx_processes[s].handle, 2);
+
+    if (ngx_processes[s].handle) {
+        ngx_close_handle(ngx_processes[s].handle);
+    }
+
+    return NGX_INVALID_PID;
 }
 
 
 ngx_pid_t
 ngx_execute(ngx_cycle_t *cycle, ngx_exec_ctx_t *ctx)
 {
-    return ngx_spawn_process(cycle, ngx_execute_proc, ctx, ctx->name,
-                             NGX_PROCESS_DETACHED);
-}
-
-
-static void
-ngx_execute_proc(ngx_cycle_t *cycle, void *data)
-{
-    ngx_exec_ctx_t *ctx = data;
-
-    STARTUPINFO           si;
-    ngx_process_t        *process;
-    PROCESS_INFORMATION   pi;
-
-    process = &ngx_processes[ngx_process_slot];
+    STARTUPINFO          si;
+    PROCESS_INFORMATION  pi;
 
     ngx_memzero(&si, sizeof(STARTUPINFO));
-    ngx_memzero(&pi, sizeof(PROCESS_INFORMATION));
-
     si.cb = sizeof(STARTUPINFO);
     si.dwFlags = STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
 
-    /* TODO: CreateProcess() */
+    ngx_memzero(&pi, sizeof(PROCESS_INFORMATION));
 
-    if (CreateProcess(NULL, ctx->path, NULL, NULL, FALSE, 0, NULL, NULL, &si,
-                      &pi)
-        == FALSE)
+    if (CreateProcess(ctx->path, ctx->args,
+                      NULL, NULL, TRUE, 0, NULL, NULL, &si, &pi)
+        == 0)
     {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                      "CreateProcess(\"%s\") \"%s\" failed",
+                      ctx->path != NULL ? ctx->path : "",
+                      ctx->args != NULL ? ctx->args : "");
+
+        return 0;
+    }
+
+    ctx->child = pi.hProcess;
+
+    if (CloseHandle(pi.hThread) == 0) {
         ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
-                      "CreateProcess() failed while executing %s \"%s\"",
-                      ctx->name, ctx->path);
-        process->pid = -1;
-        return;
+                      "CloseHandle(pi.hThread) failed");
     }
 
-    process->pid = pi.dwProcessId;
-    process->ph = pi.hProcess;
-    process->th = pi.hThread;
+    ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0,
+                  "start %s process %P", ctx->name, pi.dwProcessId);
+
+    return pi.dwProcessId;
 }
-
-
-ngx_int_t
-ngx_init_signals(ngx_log_t *log)
-{
-#if 0
-    ngx_signal_t      *sig;
-    struct sigaction   sa;
-
-    for (sig = signals; sig->signo != 0; sig++) {
-        ngx_memzero(&sa, sizeof(struct sigaction));
-        sa.sa_handler = sig->handler;
-        sigemptyset(&sa.sa_mask);
-        if (sigaction(sig->signo, &sa, NULL) == -1) {
-            ngx_log_error(NGX_LOG_EMERG, log, ngx_errno,
-                          "sigaction(%s) failed", sig->signame);
-            return NGX_ERROR;
-        }
-    }
-#endif
-
-    return NGX_OK;
-}
-
-
-#if 0
-static void
-ngx_signal_handler(int signo)
-{
-    char            *action;
-    ngx_int_t        ignore;
-    ngx_err_t        err;
-    ngx_signal_t    *sig;
-
-    ignore = 0;
-
-    err = ngx_errno;
-
-    for (sig = signals; sig->signo != 0; sig++) {
-        if (sig->signo == signo) {
-            break;
-        }
-    }
-
-    ngx_time_update(0, 0);
-
-    action = "";
-
-    switch (ngx_process) {
-
-    case NGX_PROCESS_MASTER:
-    case NGX_PROCESS_SINGLE:
-        switch (signo) {
-
-        case ngx_signal_value(NGX_SHUTDOWN_SIGNAL):
-            ngx_quit = 1;
-            action = ", shutting down";
-            break;
-
-        case ngx_signal_value(NGX_TERMINATE_SIGNAL):
-        case SIGINT:
-            ngx_terminate = 1;
-            action = ", exiting";
-            break;
-
-        case ngx_signal_value(NGX_NOACCEPT_SIGNAL):
-            ngx_noaccept = 1;
-            action = ", stop accepting connections";
-            break;
-
-        case ngx_signal_value(NGX_RECONFIGURE_SIGNAL):
-            ngx_reconfigure = 1;
-            action = ", reconfiguring";
-            break;
-
-        case ngx_signal_value(NGX_REOPEN_SIGNAL):
-            ngx_reopen = 1;
-            action = ", reopening logs";
-            break;
-
-        case ngx_signal_value(NGX_CHANGEBIN_SIGNAL):
-            if (getppid() > 1 || ngx_new_binary > 0) {
-
-                /*
-                 * Ignore the signal in the new binary if its parent is
-                 * not the init process, i.e. the old binary's process
-                 * is still running.  Or ignore the signal in the old binary's
-                 * process if the new binary's process is already running.
-                 */
-
-                action = ", ignoring";
-                ignore = 1;
-                break;
-            }
-
-            ngx_change_binary = 1;
-            action = ", changing binary";
-            break;
-
-        case SIGALRM:
-            ngx_sigalrm = 1;
-            break;
-
-        case SIGIO:
-            ngx_sigio = 1;
-            break;
-
-        case SIGCHLD:
-            ngx_reap = 1;
-            break;
-        }
-
-        break;
-
-    case NGX_PROCESS_WORKER:
-    case NGX_PROCESS_HELPER:
-        switch (signo) {
-
-        case ngx_signal_value(NGX_NOACCEPT_SIGNAL):
-            ngx_debug_quit = 1;
-        case ngx_signal_value(NGX_SHUTDOWN_SIGNAL):
-            ngx_quit = 1;
-            action = ", shutting down";
-            break;
-
-        case ngx_signal_value(NGX_TERMINATE_SIGNAL):
-        case SIGINT:
-            ngx_terminate = 1;
-            action = ", exiting";
-            break;
-
-        case ngx_signal_value(NGX_REOPEN_SIGNAL):
-            ngx_reopen = 1;
-            action = ", reopening logs";
-            break;
-
-        case ngx_signal_value(NGX_RECONFIGURE_SIGNAL):
-        case ngx_signal_value(NGX_CHANGEBIN_SIGNAL):
-        case SIGIO:
-            action = ", ignoring";
-            break;
-        }
-
-        break;
-    }
-
-    ngx_log_error(NGX_LOG_NOTICE, ngx_cycle->log, 0,
-                  "signal %d (%s) received%s", signo, sig->signame, action);
-
-    if (ignore) {
-        ngx_log_error(NGX_LOG_CRIT, ngx_cycle->log, 0,
-                      "the changing binary signal is ignored: "
-                      "you should shutdown or terminate "
-                      "before either old or new binary's process");
-    }
-
-    if (signo == SIGCHLD) {
-        ngx_process_get_status();
-    }
-
-    ngx_set_errno(err);
-}
-#endif
 
 
 static BOOL CALLBACK
@@ -480,7 +264,7 @@ ngx_enum_windows_proc(HWND hwnd, LPARAM param)
 
     GetWindowThreadProcessId(hwnd, &pid);
 
-    if (pid != param) {
+    if (pid != (ngx_pid_t) param && pid != ngx_pid) {
         return TRUE;
     }
 
@@ -500,7 +284,7 @@ ngx_process_get_status(void)
     for (i = 0; i < ngx_last_process; i++) {
         process = &ngx_processes[i];
 
-        if (process->pid == -1 || process->ph == NULL) {
+        if (process->pid == -1 || process->handle == NULL) {
             continue;
         }
 
@@ -512,7 +296,7 @@ ngx_process_get_status(void)
 #endif
         }
 
-        rc = WaitForSingleObject(process->ph, 0);
+        rc = WaitForSingleObject(process->handle, 0);
 
         if (rc == WAIT_TIMEOUT) {
             continue;
@@ -520,7 +304,8 @@ ngx_process_get_status(void)
 
         if (rc == WAIT_FAILED) {
             ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno,
-                          "WaitForSingleObject() ph:%d failed", process->ph);
+                          "WaitForSingleObject() handle:%d failed",
+                          process->handle);
             continue;
         }
 
@@ -528,40 +313,24 @@ ngx_process_get_status(void)
 
         /* TODO: process->status */
 
-        CloseHandle(process->th);
-        CloseHandle(process->ph);
+        CloseHandle(process->handle);
 
-        process->pid = -1;
-        process->exited = 1;
-        process->th = NULL;
-        process->ph = NULL;
+        process->handle = NULL;
+        process->pid = (ngx_pid_t) -1;
     }
 }
 
 
-void
-ngx_debug_point(void)
-{
-}
-
-
 ngx_int_t
-ngx_os_signal_process(ngx_cycle_t *cycle, char *name, ngx_int_t pid)
-{
-    return 0;
-}
-
-
-ngx_int_t
-ngx_service(ngx_service_main_pt func)
+ngx_service(LPSERVICE_MAIN_FUNCTION func)
 {
     SERVICE_TABLE_ENTRY  stes[] = {
-        { "", (LPSERVICE_MAIN_FUNCTION) func },
+        { (LPTSTR) "", func },
         { NULL, NULL }
     };
 
     if (StartServiceCtrlDispatcher(stes) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "StartServiceCtrlDispatcher() failed");
         return NGX_ERROR;
     }
@@ -577,7 +346,7 @@ ngx_set_service_handler(void)
                             (LPHANDLER_FUNCTION_EX) ngx_service_handler, NULL);
 
     if (ngx_sshandle == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "RegisterServiceCtrlHandlerEx() failed");
         return NGX_ERROR;
     }
@@ -592,7 +361,7 @@ ngx_set_service_handler(void)
     ngx_ss.dwWaitHint = 0;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_START_PENDING) failed");
         return NGX_ERROR;
     }
@@ -608,7 +377,7 @@ ngx_set_service_running_status(void)
     ngx_ss.dwCurrentState = SERVICE_RUNNING;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_RUNNING) failed");
         return NGX_ERROR;
     }
@@ -624,7 +393,7 @@ ngx_set_service_stopped_status(void)
     ngx_ss.dwCurrentState = SERVICE_STOPPED;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_STOPPED) failed");
         return NGX_ERROR;
     }
@@ -643,7 +412,7 @@ ngx_install_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
@@ -655,7 +424,7 @@ ngx_install_service(void)
     if (service == NULL && err == ERROR_SERVICE_DOES_NOT_EXIST) {
 
         p = exec_path;
-        p += GetModuleFileName(NULL, p, NGX_MAX_PATH);
+        p += GetModuleFileName(NULL, (LPTSTR) p, NGX_MAX_PATH);
         p = ngx_cpymem(p, " -s", sizeof(" -s") - 1);
         *p = '\0';
 
@@ -664,16 +433,18 @@ ngx_install_service(void)
                                 SERVICE_WIN32_OWN_PROCESS
                                 |SERVICE_INTERACTIVE_PROCESS,
                                 SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
-                                exec_path, NULL, NULL, NULL, NULL, NULL);
+                                (LPCTSTR) exec_path, NULL, NULL, NULL, NULL,
+                                NULL);
         if (service == NULL) {
-            ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+            ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                             "CreateService() failed");
             CloseServiceHandle(manager);
             return NGX_ERROR;
         }
 
     } else if (service == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno, "OpenService() failed");
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+                        "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -695,7 +466,7 @@ ngx_uninstall_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
@@ -709,7 +480,8 @@ ngx_uninstall_service(void)
         return NGX_OK;
 
     } else if (service == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, err, "OpenService() failed");
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, err,
+                        "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -717,7 +489,7 @@ ngx_uninstall_service(void)
     rc = NGX_OK;
 
     if (DeleteService(service) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "DeleteService() failed");
         rc = NGX_ERROR;
     }
@@ -743,14 +515,15 @@ ngx_start_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
 
     service = OpenService(manager, NGX_SERVICE_NAME, SERVICE_ALL_ACCESS);
     if (service == NULL) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno, "OpenService() failed");
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+                        "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -765,7 +538,8 @@ ngx_start_service(void)
             return NGX_OK;
         }
 
-        ngx_message_box(NGX_SERVICE_NAME, 0, err, "StartService() failed");
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, err,
+                        "StartService() failed");
         return NGX_ERROR;
     }
 
@@ -960,7 +734,7 @@ ngx_service_handler(ngx_uint_t ctl, ngx_uint_t type, void *data, void *ctx)
     }
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box(NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_STOP_PENDING) failed");
     }
 
@@ -1001,9 +775,12 @@ ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
 }
 
 
-int WINAPI
-WinMain(HINSTANCE inst, HINSTANCE prev_inst, LPSTR cmd_line, int cmd_show)
+int ngx_cdecl
+main(int argc, char *const *argv)
 {
+    u_char     *p;
+    ngx_int_t   i;
+
     SetUnhandledExceptionFilter(ngx_unhandled_exception_filter);
 
     /*
@@ -1013,58 +790,74 @@ WinMain(HINSTANCE inst, HINSTANCE prev_inst, LPSTR cmd_line, int cmd_show)
      *   -u, uninstall service.
      *   -r, start service.
      *   -e, stop service.
-     *   -s, run as service.
+     *   -z, run as service.
      */
 
 #if 0
     ngx_message_box("command line", 0, 0, "%s", cmd_line);
 #endif
 
-    if ((ngx_strlen(cmd_line) == 2) && cmd_line[0] == '-') {
+    for (i = 1; i < argc; i++) {
 
-        switch (cmd_line[1]) {
+        p = (u_char *) argv[i];
 
-        case 'i':
-            ngx_install_service();
-            return 0;
+        if (*p++ != '-') {
+            ngx_log_stderr(0, "invalid option: \"%s\"", argv[i]);
+            return 1;
+        }
 
-        case 'u':
-            ngx_uninstall_service();
-            return 0;
+        while (*p) {
 
-        case 'r':
-            ngx_start_service();
-            return 0;
+            switch (*p++) {
 
-        case 'e':
-            ngx_stop_service();
-            return 0;
+            case 'i':
+                ngx_install_service();
+                return 0;
 
-        case 's':
-            ngx_run_as_service = 1;
+            case 'u':
+                ngx_uninstall_service();
+                return 0;
 
-            if (ngx_service(ngx_service_main) != NGX_OK) {
-                return 1;
+            case 'r':
+                ngx_start_service();
+                return 0;
+
+            case 'e':
+                ngx_stop_service();
+                return 0;
+
+            case 'z':
+                ngx_run_as_service = 1;
+
+                if (ngx_service(ngx_service_main) != NGX_OK) {
+                    return 1;
+                }
+
+                return 0;
+
+            case 'p':
+            case 'c':
+            case 'g':
+            case 's':
+                i++;
+
+            default:
+                break;
             }
-
-            return 0;
-
-        default:
-            break;
         }
     }
 
-    ngx_service_main(0, NULL);
+    ngx_service_main((DWORD) argc, (LPTSTR *) argv);
 
     return 0;
 }
 
 
-static void ngx_stdcall
-ngx_service_main(int argc, char **argv)
+static void WINAPI
+ngx_service_main(DWORD argc, LPTSTR *argv)
 {
-    int      n;
-    u_char  *arguments[4], *prefix, *p;
+    int       n, i;
+    u_char  **argvs, *prefix, *p;
 
     if (ngx_run_as_service) {
         if (ngx_set_service_handler() != NGX_OK) {
@@ -1082,9 +875,9 @@ ngx_service_main(int argc, char **argv)
         goto failed;
     }
 
-    n = GetModuleFileName(NULL, prefix, NGX_MAX_PATH);
+    n = GetModuleFileName(NULL, (LPTSTR) prefix, NGX_MAX_PATH);
     if (n == 0) {
-        ngx_message_box("ngx_service_main", 0, ngx_errno,
+        ngx_message_box((u_char *) "ngx_service_main", 0, ngx_errno,
                         "GetModuleFileName() failed");
         free(prefix);
         goto failed;
@@ -1104,18 +897,26 @@ ngx_service_main(int argc, char **argv)
     ngx_message_box("ngx_service_main", 0, 0, "prefix: \"%s\"", prefix);
 #endif
 
-    SetCurrentDirectory(prefix);
+    SetCurrentDirectory((LPCTSTR) prefix);
 
-    argc = sizeof(arguments) / sizeof(u_char *) - 1;
+    argvs = (u_char **) malloc(sizeof(u_char *) * (argc + 3));
+    if (argvs == NULL) {
+        free(prefix);
+        goto failed;
+    }
 
-    arguments[0] = "ngwsx.exe";
-    arguments[1] = "-p";
-    arguments[2] = prefix;
-    arguments[3] = "";
+    for (i = 0; i < (int) argc; i++) {
+        argvs[i] = (u_char *) argv[i];
+    }
 
-    main(argc, arguments);
+    argvs[argc++] = (u_char *) "-p";
+    argvs[argc++] = prefix;
+    argvs[argc] = NULL;
+
+    ngx_main((int) argc, (char *const *) argvs);
 
     free(prefix);
+    free(argvs);
 
 failed:
 
@@ -1157,5 +958,5 @@ ngx_message_box(u_char *caption, ngx_uint_t type, ngx_err_t err,
 
     *p = '\0';
 
-    return MessageBox(NULL, errstr, caption, (UINT) type);
+    return MessageBox(NULL, (LPCSTR) errstr, (LPCSTR) caption, (UINT) type);
 }

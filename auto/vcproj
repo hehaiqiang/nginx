@@ -80,7 +80,7 @@ do
     ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
 
     if [ -z `echo $ngx_inc | grep ":"` ]; then
-        ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+        ngx_incs="$ngx_incs;../../../nginx/$ngx_inc"
     else
         ngx_incs="$ngx_incs;$ngx_inc"
     fi
@@ -95,13 +95,13 @@ done
 for ngx_inc in $HTTP_INCS
 do
     ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
-    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+    ngx_incs="$ngx_incs;../../../nginx/$ngx_inc"
 done
 
 for ngx_inc in $MAIL_INCS
 do
     ngx_inc=`echo $ngx_inc | sed -e "s/\//$ngx_regex_dirsep/g"`
-    ngx_incs="$ngx_incs;../../../win32/$ngx_inc"
+    ngx_incs="$ngx_incs;../../../nginx/$ngx_inc"
 done
 
 
@@ -245,7 +245,7 @@ done
 cat << END                                                    >> $NGX_VCPROJ
 			<Tool Name="VCLinkerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalOptions="-nodefaultlib:oldnames.lib -subsystem:windows -debug"
+				AdditionalOptions="-debug"
 				AdditionalDependencies="$ngx_libs \$(NOINHERIT)"
 				ShowProgress="0"
 				OutputFile="$NGX_OBJS/nginx.exe"
@@ -262,7 +262,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				AssemblyLinkResource="\$(NOINHERIT)"
 				GenerateDebugInformation="true"
                                 ProgramDatabaseFile="$NGX_OBJS/nginx.pdb"
-				SubSystem="2"
+				SubSystem="1"
 				RandomizedBaseAddress="0"
 				DataExecutionPrevention="0"
 				TargetMachine="0"
@@ -314,7 +314,7 @@ do
               -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
     cat << END                                                >> $NGX_VCPROJ
-			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
+			<File RelativePath="..\\..\\..\\nginx\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -358,7 +358,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
+			<File RelativePath="..\\..\\..\\nginx\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -401,7 +401,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
+			<File RelativePath="..\\..\\..\\nginx\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -440,7 +440,7 @@ END
                   -e "s#^\(.*\.\)S\\$#$ngx_objs_dir\1$ngx_objext#g"`
 
         cat << END                                            >> $NGX_VCPROJ
-			<File RelativePath="..\\..\\..\\win32\\$ngx_src">
+			<File RelativePath="..\\..\\..\\nginx\\$ngx_src">
 				<FileConfiguration Name="Debug|Win32">
 					<Tool Name="VCCLCompilerTool"
 						UsePrecompiledHeader="2"
@@ -526,7 +526,7 @@ if test -n "$NGX_RES"; then
     ngx_rcc=`echo $NGX_RCC | sed -e "s/\//$ngx_regex_dirsep/g"`
 
     cat << END                                                >> $NGX_VCPROJ
-		<File RelativePath="../../../win32/$NGX_WIN32_RC">
+		<File RelativePath="../../../nginx/$NGX_WIN32_RC">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VCResourceCompilerTool"
 					ResourceOutputFileName="$NGX_RES" />

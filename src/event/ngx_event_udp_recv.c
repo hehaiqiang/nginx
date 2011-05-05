@@ -57,8 +57,8 @@ ngx_event_udp_recv(ngx_event_t *ev)
 
     event.socklen = NGX_SOCKADDRLEN;
 
-    n = recvfrom(lc->fd, buf, size, 0, (struct sockaddr *) event.sockaddr,
-                 &event.socklen);
+    n = recvfrom(lc->fd, (char *) buf, size, 0,
+                 (struct sockaddr *) event.sockaddr, &event.socklen);
 
     if (n == -1) {
         ngx_log_error(NGX_LOG_ALERT, ev->log, ngx_socket_errno,
@@ -291,7 +291,7 @@ ngx_event_post_one_udp_recv(ngx_listening_t *ls, ngx_udp_recv_event_t *event)
         return NGX_ERROR;
     }
 
-    wsabuf.buf = event->buffer->last;
+    wsabuf.buf = (CHAR *) event->buffer->last;
     wsabuf.len = (DWORD) (event->buffer->end - event->buffer->last);
 
     flags = 0;

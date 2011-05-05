@@ -76,6 +76,7 @@ retry:
         /* create the WSABUF and coalesce the neighbouring bufs */
 
         prev = NULL;
+        buf = NULL;
         send = 0;
 
         for (cl = in; cl && vec.nelts < NGX_IOVS && send < limit; cl = cl->next)
@@ -103,7 +104,7 @@ retry:
                     return NGX_CHAIN_ERROR;
                 }
 
-                buf->buf = cl->buf->pos;
+                buf->buf = (CHAR *) cl->buf->pos;
                 buf->len = (ULONG) size;
             }
 
@@ -208,7 +209,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
     TRANSMIT_PACKETS_ELEMENT  *tpe, tpes[NGX_IOVS];
 
     if (!c->sendfile || !(ngx_event_flags & NGX_USE_IOCP_EVENT)) {
-        return ngx_writev_chain(c, in, limit);
+        return ngx_wsasend_chain(c, in, limit);
     }
 
     if (in == NULL) {
@@ -305,6 +306,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
      */
 
     fd = INVALID_HANDLE_VALUE;
+    tpe = NULL;
     fprev = 0;
 
     for (cl = in; cl && vec.nelts < NGX_IOVS && send < limit;
@@ -378,7 +380,7 @@ ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
      * TP_USE_SYSTEM_THREAD¡¢TP_USE_KERNEL_APC.
      */
 
-    rc = ngx_transmit_packets(c->fd, vec.elts, (DWORD) vec.nelts, 0, ovlp, 0);
+    rc = ngx_transmitpackets(c->fd, vec.elts, (DWORD) vec.nelts, 0, ovlp, 0);
 
     err = ngx_socket_errno;
 

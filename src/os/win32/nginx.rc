@@ -1,10 +1,5 @@
 
-/*
- * Copyright (C) Ngwsx
- */
+// Copyright (C) Igor Sysoev
 
 
-#define IDI_NGINX  1000
-
-
-IDI_NGINX ICON DISCARDABLE  "nginx.ico"
+nginx   icon  discardable  "nginx.ico"

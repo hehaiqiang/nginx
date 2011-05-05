@@ -53,9 +53,9 @@ ngx_event_acceptex(ngx_event_t *ev)
 
     /* TODO: dwReceiveDataLength */
 
-    ngx_get_acceptex_sockaddrs(buf, 0, socklen, socklen,
-                               (LPSOCKADDR *) &local_sa, &local_socklen,
-                               (LPSOCKADDR *) &remote_sa, &remote_socklen);
+    ngx_getacceptexsockaddrs(buf, 0, socklen, socklen,
+                             (LPSOCKADDR *) &local_sa, &local_socklen,
+                             (LPSOCKADDR *) &remote_sa, &remote_socklen);
 
 #if (NGX_STAT_STUB)
     (void) ngx_atomic_fetch_add(ngx_stat_accepted, 1);

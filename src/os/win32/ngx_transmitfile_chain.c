@@ -26,7 +26,7 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
     TRANSMIT_FILE_BUFFERS  *ptfb, tfb;
 
     if (!c->sendfile || !(ngx_event_flags & NGX_USE_IOCP_EVENT)) {
-        return ngx_writev_chain(c, in, limit);
+        return ngx_wsasend_chain(c, in, limit);
     }
 
     wev = c->write;
@@ -256,7 +256,7 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
          * TF_USE_SYSTEM_THREAD¡¢TF_USE_KERNEL_APC¡¢TF_WRITE_BEHIND.
          */
 
-        rc = ngx_transmit_file(c->fd, fd, (DWORD) file_size, 0, ovlp, ptfb, 0);
+        rc = ngx_transmitfile(c->fd, fd, (DWORD) file_size, 0, ovlp, ptfb, 0);
 
         err = ngx_socket_errno;
 
@@ -265,20 +265,20 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
             return in;
         }
 
-        func = "TransmitFile";
+        func = (u_char *) "TransmitFile";
 
     } else {
 
         n = 0;
 
         if (head) {
-            bufs[n].buf = head;
+            bufs[n].buf = (CHAR *) head;
             bufs[n].len = (u_long) head_size;
             n++;
         }
 
         if (tail) {
-            bufs[n].buf = tail;
+            bufs[n].buf = (CHAR *) tail;
             bufs[n].len = (u_long) tail_size;
             n++;
         }
@@ -295,7 +295,7 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
             return in;
         }
 
-        func = "WSASend";
+        func = (u_char *) "WSASend";
     }
 
     if (err == WSA_IO_PENDING || err == ERROR_IO_PENDING) {

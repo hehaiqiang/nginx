@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Ngwsx
+ * Copyright (C) Igor Sysoev
  */
 
 
@@ -9,34 +9,37 @@
 #include <nginx.h>
 
 
+ngx_uint_t  ngx_win32_ver;
+ngx_uint_t  ngx_ncpu;
+ngx_uint_t  ngx_max_wsabufs;
+ngx_int_t   ngx_max_sockets;
+ngx_uint_t  ngx_inherited_nonblocking = 1;
+ngx_uint_t  ngx_tcp_nodelay_and_tcp_nopush;
+
+char        ngx_unique[NGX_INT32_LEN + 1];
+
+
 ngx_os_io_t  ngx_os_io = {
-    ngx_win32_recv,
-    ngx_readv_chain,
-    ngx_udp_win32_recv,
-    ngx_win32_send,
+    ngx_wsarecv,
+    ngx_wsarecv_chain,
+    ngx_udp_wsarecv,
+    ngx_wsasend,
 #if (NGX_HAVE_SENDFILE)
     ngx_transmitfile_chain,
     NGX_IO_SENDFILE
 #else
-    ngx_writev_chain,
+    ngx_wsasend_chain,
     0
 #endif
 };
 
 
-ngx_int_t                         ngx_ncpu;
-ngx_int_t                         ngx_max_sockets;
-ngx_uint_t                        ngx_inherited_nonblocking;
-ngx_uint_t                        ngx_tcp_nodelay_and_tcp_nopush;
-
-ngx_uint_t                        ngx_win32_ver;
-
 LPFN_ACCEPTEX                     ngx_acceptex;
 LPFN_CONNECTEX                    ngx_connectex;
 LPFN_DISCONNECTEX                 ngx_disconnectex;
-LPFN_TRANSMITFILE                 ngx_transmit_file;
-LPFN_TRANSMITPACKETS              ngx_transmit_packets;
-LPFN_GETACCEPTEXSOCKADDRS         ngx_get_acceptex_sockaddrs;
+LPFN_TRANSMITFILE                 ngx_transmitfile;
+LPFN_TRANSMITPACKETS              ngx_transmitpackets;
+LPFN_GETACCEPTEXSOCKADDRS         ngx_getacceptexsockaddrs;
 LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
 
 
@@ -51,8 +54,8 @@ static struct {
 
     { WSAID_GETACCEPTEXSOCKADDRS,
       sizeof(GUID),
-      (void **) &ngx_get_acceptex_sockaddrs,
-      sizeof(ngx_get_acceptex_sockaddrs),
+      (void **) &ngx_getacceptexsockaddrs,
+      sizeof(ngx_getacceptexsockaddrs),
       NGX_WIN32_VER_400,
       "GetAcceptExSockaddrs" },
 
@@ -65,8 +68,8 @@ static struct {
 
     { WSAID_TRANSMITFILE,
       sizeof(GUID),
-      (void **) &ngx_transmit_file,
-      sizeof(ngx_transmit_file),
+      (void **) &ngx_transmitfile,
+      sizeof(ngx_transmitfile),
       NGX_WIN32_VER_500,
       "TransmitFile" },
 
@@ -86,8 +89,8 @@ static struct {
 
     { WSAID_TRANSMITPACKETS,
       sizeof(GUID),
-      (void **) &ngx_transmit_packets,
-      sizeof(ngx_transmit_packets),
+      (void **) &ngx_transmitpackets,
+      sizeof(ngx_transmitpackets),
       NGX_WIN32_VER_501,
       "TransmitPackets" },
 
@@ -242,15 +245,12 @@ retry_bind:
 
 
     ngx_memzero(&si, sizeof(SYSTEM_INFO));
-
     GetSystemInfo(&si);
-
     ngx_pagesize = si.dwPageSize;
+    ngx_ncpu = si.dwNumberOfProcessors;
     ngx_cacheline_size = NGX_CPU_CACHE_LINE;
 
     for (n = ngx_pagesize; n >>= 1; ngx_pagesize_shift++) { /* void */ }
-
-    ngx_ncpu = si.dwNumberOfProcessors;
 
     /*
      * TODO:
@@ -265,6 +265,8 @@ retry_bind:
 #endif
 
 
+    num_conn = 0;
+
     rc = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
              "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Winsock",
              0, KEY_READ, &hkey);
@@ -274,7 +276,6 @@ retry_bind:
                    "\\Services\\Tcpip\\Parameters\\Winsock) failed");
 
     } else {
-        num_conn = 0;
         len = sizeof(num_conn);
 
         rc = RegQueryValueEx(hkey, "TcpNumConnections", NULL, NULL,
@@ -310,6 +311,23 @@ retry_bind:
 #endif
 
     srand((unsigned int) ngx_time());
+
+    if (GetEnvironmentVariable("ngx_unique", ngx_unique, NGX_INT32_LEN + 1)
+        != 0)
+    {
+        ngx_process = NGX_PROCESS_WORKER;
+
+    } else {
+        err = ngx_errno;
+
+        if (err != ERROR_ENVVAR_NOT_FOUND) {
+            ngx_log_error(NGX_LOG_EMERG, log, err,
+                          "GetEnvironmentVariable(\"ngx_unique\") failed");
+            return NGX_ERROR;
+        }
+
+        ngx_sprintf((u_char *) ngx_unique, "%P%Z", ngx_pid);
+    }
 
     return NGX_OK;
 }

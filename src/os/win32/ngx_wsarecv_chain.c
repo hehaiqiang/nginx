@@ -15,7 +15,7 @@
 #if 1
 
 ssize_t
-ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *chain)
+ngx_wsarecv_chain(ngx_connection_t *c, ngx_chain_t *chain)
 {
     int             flags, rc;
     u_char         *prev;
@@ -62,6 +62,7 @@ retry:
 
         cl = chain;
         prev = NULL;
+        buf = NULL;
         size = 0;
 
         /* coalesce the neighbouring bufs */
@@ -77,7 +78,7 @@ retry:
                     return NGX_ERROR;
                 }
 
-                buf->buf = cl->buf->last;
+                buf->buf = (CHAR *) cl->buf->last;
                 buf->len = (DWORD) (cl->buf->end - cl->buf->last);
             }
 
@@ -90,8 +91,8 @@ retry:
     n = 0;
     flags = 0;
 
-    rc = WSARecv(c->fd, vec.elts, (DWORD) vec.nelts, (DWORD *) &n, &flags, ovlp,
-                 NULL);
+    rc = WSARecv(c->fd, vec.elts, (DWORD) vec.nelts, (DWORD *) &n,
+                 (LPDWORD) &flags, ovlp, NULL);
 
     err = ngx_socket_errno;
 
@@ -148,7 +149,7 @@ retry:
 #else
 
 ssize_t
-ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *chain)
+ngx_wsarecv_chain(ngx_connection_t *c, ngx_chain_t *chain)
 {
     int             flags, rc;
     u_char         *prev;

@@ -276,7 +276,8 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
         events = 0;
 
         rc = ngx_get_queued_completion_status_ex(iocp, event_list,
-                                                 (ULONG) nevents, &events,
+                                                 (ULONG) nevents,
+                                                 (PULONG) &events,
                                                  (DWORD) timer, FALSE);
 
     } else {

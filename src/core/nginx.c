@@ -31,8 +31,6 @@ static ngx_conf_enum_t  ngx_debug_points[] = {
 
 static ngx_command_t  ngx_core_commands[] = {
 
-#if !(NGX_WIN32)
-
     { ngx_string("daemon"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_FLAG,
       ngx_conf_set_flag_slot,
@@ -46,8 +44,6 @@ static ngx_command_t  ngx_core_commands[] = {
       0,
       offsetof(ngx_core_conf_t, master),
       NULL },
-
-#endif
 
     { ngx_string("timer_resolution"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
@@ -70,16 +66,12 @@ static ngx_command_t  ngx_core_commands[] = {
       offsetof(ngx_core_conf_t, lock_file),
       NULL },
 
-#if !(NGX_WIN32)
-
     { ngx_string("worker_processes"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_num_slot,
       0,
       offsetof(ngx_core_conf_t, worker_processes),
       NULL },
-
-#endif
 
     { ngx_string("debug_points"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
@@ -204,7 +196,11 @@ static char **ngx_os_environ;
 
 
 int ngx_cdecl
+#if (NGX_WIN32)
+ngx_main(int argc, char *const *argv)
+#else
 main(int argc, char *const *argv)
+#endif
 {
     ngx_int_t         i;
     ngx_log_t        *log;

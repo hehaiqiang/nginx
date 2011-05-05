@@ -15,44 +15,36 @@
 typedef ngx_rbtree_key_t      ngx_msec_t;
 typedef ngx_rbtree_key_int_t  ngx_msec_int_t;
 
-typedef struct tm             ngx_tm_t;
+typedef SYSTEMTIME            ngx_tm_t;
+typedef FILETIME              ngx_mtime_t;
 
-#define ngx_tm_sec            tm_sec
-#define ngx_tm_min            tm_min
-#define ngx_tm_hour           tm_hour
-#define ngx_tm_mday           tm_mday
-#define ngx_tm_mon            tm_mon
-#define ngx_tm_year           tm_year
-#define ngx_tm_wday           tm_wday
-#define ngx_tm_isdst          tm_isdst
+#define ngx_tm_sec            wSecond
+#define ngx_tm_min            wMinute
+#define ngx_tm_hour           wHour
+#define ngx_tm_mday           wDay
+#define ngx_tm_mon            wMonth
+#define ngx_tm_year           wYear
+#define ngx_tm_wday           wDayOfWeek
 
-#define ngx_tm_sec_t          int
-#define ngx_tm_min_t          int
-#define ngx_tm_hour_t         int
-#define ngx_tm_mday_t         int
-#define ngx_tm_mon_t          int
-#define ngx_tm_year_t         int
-#define ngx_tm_wday_t         int
-
-
-#if (NGX_HAVE_GMTOFF)
-#define ngx_tm_gmtoff         tm_gmtoff
-#define ngx_tm_zone           tm_zone
-#endif
+#define ngx_tm_sec_t          u_short
+#define ngx_tm_min_t          u_short
+#define ngx_tm_hour_t         u_short
+#define ngx_tm_mday_t         u_short
+#define ngx_tm_mon_t          u_short
+#define ngx_tm_year_t         u_short
+#define ngx_tm_wday_t         u_short
 
 
-#define ngx_timezone(isdst) (- (isdst ? _timezone + 3600 : _timezone) / 60)
+#define ngx_msleep            Sleep
 
+#define NGX_HAVE_GETTIMEZONE  1
 
-void ngx_timezone_update(void);
-void ngx_localtime(time_t s, ngx_tm_t *tm);
+#define ngx_timezone_update()
+
+ngx_int_t ngx_gettimezone(void);
 void ngx_libc_localtime(time_t s, struct tm *tm);
 void ngx_libc_gmtime(time_t s, struct tm *tm);
-
 void ngx_gettimeofday(struct timeval *tp);
-
-#define ngx_msleep(ms)        (void) Sleep((DWORD) ms)
-#define ngx_sleep(s)          (void) Sleep((DWORD) s * 1000)
 
 
 #endif /* _NGX_TIME_H_INCLUDED_ */

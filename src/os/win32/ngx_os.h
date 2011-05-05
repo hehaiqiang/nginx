@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Ngwsx
+ * Copyright (C) Igor Sysoev
  */
 
 
@@ -94,11 +94,11 @@ ngx_int_t ngx_message_box(u_char *caption, ngx_uint_t type, ngx_err_t err,
     const char *fmt, ...);
 
 
-ssize_t ngx_win32_recv(ngx_connection_t *c, u_char *buf, size_t size);
-ssize_t ngx_readv_chain(ngx_connection_t *c, ngx_chain_t *entry);
-ssize_t ngx_udp_win32_recv(ngx_connection_t *c, u_char *buf, size_t size);
-ssize_t ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size);
-ngx_chain_t *ngx_writev_chain(ngx_connection_t *c, ngx_chain_t *in,
+ssize_t ngx_wsarecv(ngx_connection_t *c, u_char *buf, size_t size);
+ssize_t ngx_wsarecv_chain(ngx_connection_t *c, ngx_chain_t *entry);
+ssize_t ngx_udp_wsarecv(ngx_connection_t *c, u_char *buf, size_t size);
+ssize_t ngx_wsasend(ngx_connection_t *c, u_char *buf, size_t size);
+ngx_chain_t *ngx_wsasend_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
 ngx_chain_t *ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in,
     off_t limit);
@@ -107,19 +107,12 @@ ngx_chain_t *ngx_transmitpackets_chain(ngx_connection_t *c, ngx_chain_t *in,
 
 
 extern ngx_os_io_t                       ngx_os_io;
-extern ngx_int_t                         ngx_ncpu;
+extern ngx_uint_t                        ngx_ncpu;
 extern ngx_int_t                         ngx_max_sockets;
 extern ngx_uint_t                        ngx_inherited_nonblocking;
 extern ngx_uint_t                        ngx_tcp_nodelay_and_tcp_nopush;
-
 extern ngx_uint_t                        ngx_win32_ver;
-
-extern LPFN_ACCEPTEX                     ngx_acceptex;
-extern LPFN_CONNECTEX                    ngx_connectex;
-extern LPFN_DISCONNECTEX                 ngx_disconnectex;
-extern LPFN_TRANSMITFILE                 ngx_transmit_file;
-extern LPFN_TRANSMITPACKETS              ngx_transmit_packets;
-extern LPFN_GETACCEPTEXSOCKADDRS         ngx_get_acceptex_sockaddrs;
+extern char                              ngx_unique[];
 extern LPFN_GETQUEUEDCOMPLETIONSTATUSEX  ngx_get_queued_completion_status_ex;
 
 

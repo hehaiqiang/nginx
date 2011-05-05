@@ -19,7 +19,7 @@
 #if 1
 
 ngx_chain_t *
-ngx_writev_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
+ngx_wsasend_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 {
     int             rc;
     off_t           size, send;
@@ -78,6 +78,7 @@ retry:
         /* create the WSABUF and coalesce the neighbouring bufs */
 
         prev = NULL;
+        buf = NULL;
         send = 0;
 
         for (cl = in; cl && vec.nelts < NGX_IOVS && send < limit; cl = cl->next)
@@ -101,7 +102,7 @@ retry:
                     return NGX_CHAIN_ERROR;
                 }
 
-                buf->buf = cl->buf->pos;
+                buf->buf = (CHAR *) cl->buf->pos;
                 buf->len = (ULONG) size;
             }
 
@@ -192,7 +193,7 @@ retry:
 #else
 
 ngx_chain_t *
-ngx_writev_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
+ngx_wsasend_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 {
     int             rc;
     off_t           size, send, sent;

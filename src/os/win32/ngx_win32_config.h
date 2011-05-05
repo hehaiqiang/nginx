@@ -8,8 +8,6 @@
 #define _NGX_WIN32_CONFIG_H_INCLUDED_
 
 
-#define NGX_HAVE_FIONBIO      1
-
 #define NGX_HAVE_SENDFILE     1
 
 #define NGX_HAVE_FILE_AIO     1
@@ -46,6 +44,9 @@
 #define NGX_TIME_T_LEN        (sizeof("-9223372036854775808") - 1)
 
 #endif
+
+
+#define NGX_THREADS           1
 
 
 typedef unsigned char     u_char;
@@ -134,6 +135,31 @@ typedef uint64_t          uintptr_t;
 #include <time.h>
 
 
+#ifdef _MSC_VER
+
+#pragma warning(default:4201)
+
+/* disable some "-W4" level warnings */
+
+#pragma warning(disable:4204)
+
+/* 'type cast': from function pointer to data pointer */
+#pragma warning(disable:4054)
+
+/* 'type cast': from data pointer to function pointer */
+#pragma warning(disable:4055)
+
+/* unreferenced formal parameter */
+#pragma warning(disable:4100)
+
+/* FD_SET() and FD_CLR(): conditional expression is constant */
+#pragma warning(disable:4127)
+
+#pragma warning(disable:4152)
+
+#endif
+
+
 #include <ngx_auto_config.h>
 
 
@@ -153,12 +179,6 @@ typedef uint64_t          uintptr_t;
 #define NGX_HAVE_SO_SNDLOWAT         0
 
 #define NGX_HAVE_INHERITED_NONBLOCK  0
-
-#define NGX_HAVE_LOCALTIME_R         0
-
-#define NGX_HAVE_STRERROR_R          0
-
-#define NGX_HAVE_GNU_CRYPT_R         0
 
 #endif
 

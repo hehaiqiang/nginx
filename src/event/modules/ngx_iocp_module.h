@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Ngwsx
+ * Copyright (C) Igor Sysoev
  */
 
 

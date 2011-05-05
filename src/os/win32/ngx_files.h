@@ -61,7 +61,7 @@ typedef struct {
 #define NGX_FILE_ERROR           -1
 
 
-ngx_fd_t ngx_open_file(const char *path, int mode, int create, int access);
+ngx_fd_t ngx_open_file(u_char *path, int mode, int create, int access);
 #define ngx_open_file_n          "CreateFile()"
 
 #define NGX_FILE_RDONLY          GENERIC_READ
@@ -82,7 +82,8 @@ ngx_fd_t ngx_open_file(const char *path, int mode, int create, int access);
 #define ngx_close_file_n         "CloseHandle()"
 
 
-#define ngx_delete_file(name)    (DeleteFile(name) == 0 ? NGX_FILE_ERROR : 0)
+#define ngx_delete_file(name)                                                  \
+    (DeleteFile((LPCTSTR) name) == 0 ? NGX_FILE_ERROR : 0)
 #define ngx_delete_file_n        "DeleteFile()"
 
 
@@ -243,6 +244,7 @@ ngx_is_file(ngx_file_info_t *sb)
 #define ngx_is_exec(sb)          0
 #define ngx_file_access(sb)      ((sb)->st_mode & 0777)
 off_t ngx_file_size(ngx_file_info_t *sb);
+#define ngx_file_fs_size(fi)     ngx_file_size(fi)
 time_t ngx_file_mtime(ngx_file_info_t *sb);
 ngx_file_uniq_t ngx_file_uniq(ngx_file_info_t *sb);
 
@@ -263,7 +265,7 @@ void ngx_close_file_mapping(ngx_file_mapping_t *fm);
 #endif
 
 
-#define ngx_realpath(p, r)       strcpy(r, p)
+#define ngx_realpath(p, r)       strcpy((char *) r, (const char *) p)
 #define ngx_realpath_n           "ngx_realpath()"
 #define ngx_getcwd(buf, size)    GetCurrentDirectory(size, (LPSTR) buf)
 #define ngx_getcwd_n             "GetCurrentDirectory()"
@@ -288,7 +290,7 @@ ngx_int_t ngx_read_dir(ngx_dir_t *dir);
 
 
 #define ngx_create_dir(name, access)                                           \
-    (CreateDirectory(name, NULL) == 0 ? NGX_FILE_ERROR : 0)
+    (CreateDirectory((LPCTSTR) name, NULL) == 0 ? NGX_FILE_ERROR : 0)
 #define ngx_create_dir_n         "CreateDirectory()"
 
 

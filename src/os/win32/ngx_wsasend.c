@@ -12,7 +12,7 @@
 #if 1
 
 ssize_t
-ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size)
+ngx_wsasend(ngx_connection_t *c, u_char *buf, size_t size)
 {
     int             rc;
     WSABUF          wsabuf;
@@ -46,7 +46,7 @@ retry:
 
         /* non-blocking io */
 
-        wsabuf.buf = buf;
+        wsabuf.buf = (CHAR *) buf;
         wsabuf.len = (ULONG) size;
     }
 
@@ -105,7 +105,7 @@ retry:
 #else
 
 ssize_t
-ngx_win32_send(ngx_connection_t *c, u_char *buf, size_t size)
+ngx_wsasend(ngx_connection_t *c, u_char *buf, size_t size)
 {
     int             rc;
     WSABUF          wsabuf;

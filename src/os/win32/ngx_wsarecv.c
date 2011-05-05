@@ -12,7 +12,7 @@
 #if 1
 
 ssize_t
-ngx_win32_recv(ngx_connection_t *c, u_char *buf, size_t size)
+ngx_wsarecv(ngx_connection_t *c, u_char *buf, size_t size)
 {
     int             flags, rc;
     WSABUF          wsabuf;
@@ -42,14 +42,14 @@ retry:
     } else {
         ovlp = NULL;
 
-        wsabuf.buf = buf;
+        wsabuf.buf = (CHAR *) buf;
         wsabuf.len = (ULONG) size;
     }
 
     n = 0;
     flags = 0;
 
-    rc = WSARecv(c->fd, &wsabuf, 1, (DWORD *) &n, &flags, ovlp, NULL);
+    rc = WSARecv(c->fd, &wsabuf, 1, (DWORD *) &n, (LPDWORD) &flags, ovlp, NULL);
 
     err = ngx_socket_errno;
 
@@ -106,7 +106,7 @@ retry:
 #else
 
 ssize_t
-ngx_win32_recv(ngx_connection_t *c, u_char *buf, size_t size)
+ngx_wsarecv(ngx_connection_t *c, u_char *buf, size_t size)
 {
     int             flags, rc;
     WSABUF          wsabuf;

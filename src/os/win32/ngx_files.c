@@ -16,7 +16,7 @@ ngx_uint_t  ngx_file_aio = 1;
 
 
 ngx_fd_t
-ngx_open_file(const char *path, int mode, int create, int access)
+ngx_open_file(u_char *path, int mode, int create, int access)
 {
     int       da, sm, cd, fa;
     ngx_fd_t  fd;
@@ -52,7 +52,7 @@ ngx_open_file(const char *path, int mode, int create, int access)
         fa |= FILE_FLAG_OVERLAPPED;
     }
 
-    fd = CreateFile(path, da, sm, NULL, cd, fa, NULL);
+    fd = CreateFile((LPCTSTR) path, da, sm, NULL, cd, fa, NULL);
     if (fd == INVALID_HANDLE_VALUE) {
         return NGX_INVALID_FILE;
     }
@@ -137,7 +137,7 @@ ngx_write_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
         return NGX_ERROR;
     }
 
-    if (n != size) {
+    if (n != (ssize_t) size) {
         ngx_log_error(NGX_LOG_CRIT, file->log, 0,
                       "WriteFile() has written only %z of %uz", n, size);
         return NGX_ERROR;
@@ -154,7 +154,7 @@ ngx_fd_t
 ngx_open_tempfile(u_char *name, ngx_uint_t persistent, ngx_uint_t access)
 {
     int       sm;
-    char      buf[NGX_MAX_PATH], c, *p, *last;
+    u_char    buf[NGX_MAX_PATH], c, *p, *last;
     ngx_fd_t  fd;
 
     p = buf;
@@ -177,7 +177,7 @@ ngx_open_tempfile(u_char *name, ngx_uint_t persistent, ngx_uint_t access)
 
     sm = FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE;
 
-    fd = CreateFile(name, NGX_FILE_RDWR, sm, NULL, CREATE_NEW,
+    fd = CreateFile((LPCTSTR) name, NGX_FILE_RDWR, sm, NULL, CREATE_NEW,
                     persistent ? FILE_ATTRIBUTE_NORMAL
                     : FILE_FLAG_DELETE_ON_CLOSE, NULL);
 
@@ -281,7 +281,7 @@ ngx_write_chain_to_file(ngx_file_t *file, ngx_chain_t *cl, off_t offset,
                 return NGX_ERROR;
             }
 
-            if (n != iov[i].len) {
+            if (n != (ssize_t) iov[i].len) {
                 ngx_log_error(NGX_LOG_CRIT, file->log, 0,
                               "WriteFile() has written only %z of %uz",
                               n, iov[i].len);
@@ -301,15 +301,56 @@ ngx_write_chain_to_file(ngx_file_t *file, ngx_chain_t *cl, off_t offset,
 
 
 ngx_err_t
-ngx_win32_rename_file(ngx_str_t *src, ngx_str_t *to, ngx_log_t *log)
+ngx_win32_rename_file(ngx_str_t *from, ngx_str_t *to, ngx_log_t *log)
 {
-    if (MoveFileEx(src->data, to->data, MOVEFILE_REPLACE_EXISTING) == 0) {
-        ngx_log_error(NGX_LOG_ALERT, log, ngx_errno,
-                      "MoveFileEx(\"%V\", \"%V\") failed", src, to);
-        return -1;
+    u_char             *name;
+    ngx_err_t           err;
+    ngx_uint_t          collision;
+    ngx_atomic_uint_t   num;
+
+    name = ngx_alloc(to->len + 1 + 10 + 1 + sizeof("DELETE"), log);
+    if (name == NULL) {
+        return NGX_ENOMEM;
     }
 
-    return 0;
+    ngx_memcpy(name, to->data, to->len);
+
+    collision = 0;
+
+    /* mutex_lock() (per cache or single ?) */
+
+    for ( ;; ) {
+        num = ngx_next_temp_number(collision);
+
+        ngx_sprintf(name + to->len, ".%0muA.DELETE%Z", num);
+
+        if (MoveFile((const char *) to->data, (const char *) name) != 0) {
+            break;
+        }
+
+        collision = 1;
+
+        ngx_log_error(NGX_LOG_CRIT, log, ngx_errno,
+                      "MoveFile() \"%s\" to \"%s\" failed", to->data, name);
+    }
+
+    if (MoveFile((const char *) from->data, (const char *) to->data) == 0) {
+        err = ngx_errno;
+
+    } else {
+        err = 0;
+    }
+
+    if (DeleteFile((const char *) name) == 0) {
+        ngx_log_error(NGX_LOG_CRIT, log, ngx_errno,
+                      "DeleteFile() \"%s\" failed", name);
+    }
+
+    /* mutex_unlock() */
+
+    ngx_free(name);
+
+    return err;
 }
 
 
@@ -557,7 +598,7 @@ ngx_open_dir(ngx_str_t *name, ngx_dir_t *dir)
         }
     }
 
-    dir->dir = FindFirstFile(dir->path, &dir->de);
+    dir->dir = FindFirstFile((LPCTSTR) dir->path, &dir->de);
 
     if (dir->dir == INVALID_HANDLE_VALUE) {
         return NGX_ERROR;
