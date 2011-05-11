@@ -3,16 +3,16 @@
 
 
 PCRE_CONF_ARGS= \
-	--with-pcre=$(ADDON_DIR)/../../../pcre
+	--with-pcre=$(ADDON_DIR)/../../../lib/pcre
 
 ZLIB_CONF_ARGS= \
-	--with-zlib=$(ADDON_DIR)/../../../zlib
+	--with-zlib=$(ADDON_DIR)/../../../lib/zlib
 
 MD5_CONF_ARGS= \
-	--with-md5=$(ADDON_DIR)/../../../md5/win32
+	--with-md5=$(ADDON_DIR)/../../../lib/md5/win32
 
 OPENSSL_CONF_ARGS= \
-	--with-openssl=$(ADDON_DIR)/../../../openssl \
+	--with-openssl=$(ADDON_DIR)/../../../lib/openssl \
 	--with-openssl-opt=enable-tlsext
 
 CORE_CONF_ARGS= \
