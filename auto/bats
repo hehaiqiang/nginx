@@ -1,0 +1,60 @@
+
+# Copyright (C) Ngwsx
+
+
+NGX_SINGLE_PROCESS_BAT=$NGX_OBJS/$NGINX_BIN-single-process.bat
+NGX_MULTI_PROCESSES_BAT=$NGX_OBJS/$NGINX_BIN-multi-processes.bat
+NGX_STOP_BAT=$NGX_OBJS/$NGINX_BIN-stop.bat
+NGX_RELOAD_BAT=$NGX_OBJS/$NGINX_BIN-reload.bat
+NGX_TEST_BAT=$NGX_OBJS/$NGINX_BIN-test.bat
+NGX_VERSION_BAT=$NGX_OBJS/$NGINX_BIN-version.bat
+
+
+echo "creating $NGX_SINGLE_PROCESS_BAT"
+
+cat << END                                           > $NGX_SINGLE_PROCESS_BAT
+$NGINX_BIN -s stop
+$NGINX_BIN -g "master_process off;"
+pause
+END
+
+
+echo "creating $NGX_MULTI_PROCESSES_BAT"
+
+cat << END                                          > $NGX_MULTI_PROCESSES_BAT
+$NGINX_BIN -s stop
+$NGINX_BIN
+pause
+END
+
+
+echo "creating $NGX_STOP_BAT"
+
+cat << END                                                     > $NGX_STOP_BAT
+$NGINX_BIN -s stop
+pause
+END
+
+
+echo "creating $NGX_RELOAD_BAT"
+
+cat << END                                                   > $NGX_RELOAD_BAT
+$NGINX_BIN -s reload
+pause
+END
+
+
+echo "creating $NGX_TEST_BAT"
+
+cat << END                                                     > $NGX_TEST_BAT
+$NGINX_BIN -t
+pause
+END
+
+
+echo "creating $NGX_VERSION_BAT"
+
+cat << END                                                  > $NGX_VERSION_BAT
+$NGINX_BIN -v
+pause
+END
