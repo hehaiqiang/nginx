@@ -55,6 +55,6 @@ END
 echo "creating $NGX_VERSION_BAT"
 
 cat << END                                                  > $NGX_VERSION_BAT
-$NGINX_BIN -v
+$NGINX_BIN -V
 pause
 END

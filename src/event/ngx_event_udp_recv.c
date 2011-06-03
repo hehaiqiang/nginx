@@ -188,14 +188,15 @@ ngx_event_udp_aio_recv(ngx_event_t *ev)
 #endif
 
     if (ls->addr_ntop) {
-        c->addr_text.data = ngx_pnalloc(c->pool, ls->addr_text_max_len);
+        c->addr_text.data = ngx_pnalloc(c->pool,
+                                  ls->addr_text_max_len + sizeof(":65535") - 1);
         if (c->addr_text.data == NULL) {
             ngx_close_udp_connection(c);
             goto post_udp_recv;
         }
 
         c->addr_text.len = ngx_sock_ntop(c->sockaddr, c->addr_text.data,
-                                         ls->addr_text_max_len, 0);
+                               ls->addr_text_max_len + sizeof(":65535") - 1, 1);
         if (c->addr_text.len == 0) {
             ngx_close_udp_connection(c);
             goto post_udp_recv;
