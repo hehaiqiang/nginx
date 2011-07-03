@@ -317,7 +317,7 @@ ngx_iocp_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
         ovlp = (ngx_event_ovlp_t *) event_list[i].lpOverlapped;
         n = event_list[i].dwNumberOfBytesTransferred;
 
-        if (c != NULL && c->fd == -1) {
+        if (c != NULL && c->fd == -1 || ovlp != NULL && ovlp->event == NULL) {
             continue;
         }
 

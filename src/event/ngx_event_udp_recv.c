@@ -1,6 +1,6 @@
 
 /*
- * Copyright (C) Seegle
+ * Copyright (C) Ngwsx
  */
 
 
