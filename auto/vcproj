@@ -103,7 +103,7 @@ done
 cat << END                                                    >> $NGX_VCPROJ
 			<Tool Name="VCCLCompilerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalOptions="-W4 -WX -nologo -MT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS"
+				AdditionalOptions="-W4 -WX -nologo -MT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS $EXTRA_CFLAGS"
 				AdditionalIncludeDirectories="$ngx_incs"
 				AdditionalUsingDirectories="\$(NOINHERIT)"
 				MinimalRebuild="false"

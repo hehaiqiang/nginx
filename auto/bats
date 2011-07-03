@@ -5,9 +5,15 @@
 NGX_SINGLE_PROCESS_BAT=$NGX_OBJS/$NGINX_BIN-single-process.bat
 NGX_MULTI_PROCESSES_BAT=$NGX_OBJS/$NGINX_BIN-multi-processes.bat
 NGX_STOP_BAT=$NGX_OBJS/$NGINX_BIN-stop.bat
+
 NGX_RELOAD_BAT=$NGX_OBJS/$NGINX_BIN-reload.bat
 NGX_TEST_BAT=$NGX_OBJS/$NGINX_BIN-test.bat
 NGX_VERSION_BAT=$NGX_OBJS/$NGINX_BIN-version.bat
+
+NGX_INSTALL_SERVICE_BAT=$NGX_OBJS/$NGINX_BIN-install-service.bat
+NGX_UNINSTALL_SERVICE_BAT=$NGX_OBJS/$NGINX_BIN-uninstall-service.bat
+NGX_START_SERVICE_BAT=$NGX_OBJS/$NGINX_BIN-start-service.bat
+NGX_STOP_SERVICE_BAT=$NGX_OBJS/$NGINX_BIN-stop-service.bat
 
 
 echo "creating $NGX_SINGLE_PROCESS_BAT"
@@ -56,5 +62,37 @@ echo "creating $NGX_VERSION_BAT"
 
 cat << END                                                  > $NGX_VERSION_BAT
 $NGINX_BIN -V
+pause
+END
+
+
+echo "creating $NGX_INSTALL_SERVICE_BAT"
+
+cat << END                                          > $NGX_INSTALL_SERVICE_BAT
+$NGINX_BIN -i
+pause
+END
+
+
+echo "creating $NGX_UNINSTALL_SERVICE_BAT"
+
+cat << END                                        > $NGX_UNINSTALL_SERVICE_BAT
+$NGINX_BIN -u
+pause
+END
+
+
+echo "creating $NGX_START_SERVICE_BAT"
+
+cat << END                                            > $NGX_START_SERVICE_BAT
+$NGINX_BIN -r
+pause
+END
+
+
+echo "creating $NGX_STOP_SERVICE_BAT"
+
+cat << END                                             > $NGX_STOP_SERVICE_BAT
+$NGINX_BIN -e
 pause
 END
