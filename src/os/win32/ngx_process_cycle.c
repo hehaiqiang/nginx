@@ -83,28 +83,6 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
     ngx_console_init(cycle);
 
-#if 0
-    {
-    u_char           *var, *p;
-    ngx_uint_t        i;
-    ngx_listening_t  *ls;
-
-    var = ngx_alloc(cycle->listening.nelts * (NGX_INT32_LEN + 1) + 1,
-                    cycle->log);
-
-    p = var;
-
-    ls = cycle->listening.elts;
-    for (i = 0; i < cycle->listening.nelts; i++) {
-        p = ngx_sprintf(p, "%ud;", ls[i].fd);
-    }
-
-    *p = '\0';
-
-    SetEnvironmentVariable(NGINX_VAR, (char *) var);
-    }
-#endif
-
     SetEnvironmentVariable("ngx_unique", ngx_unique);
 
     ngx_master_process_event = CreateEvent(NULL, 1, 0,
@@ -136,10 +114,6 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
     events[1] = ngx_quit_event;
     events[2] = ngx_reopen_event;
     events[3] = ngx_reload_event;
-
-#if 1
-    ngx_close_listening_sockets(cycle);
-#endif
 
     if (ngx_start_worker_processes(cycle, NGX_PROCESS_RESPAWN) == 0) {
         exit(2);
@@ -233,10 +207,6 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
             ngx_cycle = cycle;
 
-#if 1
-            ngx_close_listening_sockets(cycle);
-#endif
-
             if (ngx_start_worker_processes(cycle, NGX_PROCESS_JUST_RESPAWN)) {
                 ngx_quit_worker_processes(cycle, 1);
             }
@@ -252,6 +222,8 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
 
             if (!live && (ngx_terminate || ngx_quit)) {
                 ngx_master_process_exit(cycle);
+
+                return;
             }
 
             continue;
@@ -261,6 +233,8 @@ ngx_master_process_cycle(ngx_cycle_t *cycle)
             ngx_terminate_worker_processes(cycle);
 
             ngx_master_process_exit(cycle);
+
+            return;
         }
 
         if (ev == WAIT_FAILED) {
@@ -425,6 +399,29 @@ ngx_start_worker_processes(ngx_cycle_t *cycle, ngx_int_t type)
     ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0, "start worker processes");
 
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
+
+    if (ccf->worker_processes > 1) {
+        u_char           *var, *p;
+        ngx_listening_t  *ls;
+
+        var = ngx_alloc(cycle->listening.nelts * (NGX_INT32_LEN + 1) + 1,
+                        cycle->log);
+        p = var;
+
+        ls = cycle->listening.elts;
+        for (n = 0; n < (ngx_int_t) cycle->listening.nelts; n++) {
+            p = ngx_sprintf(p, "%ud;", ls[n].fd);
+        }
+
+        *p = '\0';
+
+        SetEnvironmentVariable(NGINX_VAR, (char *) var);
+
+        ngx_free(var);
+
+    } else {
+        ngx_close_listening_sockets(cycle);
+    }
 
     for (n = 0; n < ccf->worker_processes; n++) {
         if (ngx_spawn_process(cycle, "worker", type) == NGX_INVALID_PID) {
@@ -614,7 +611,9 @@ ngx_master_process_exit(ngx_cycle_t *cycle)
 
     ngx_destroy_pool(cycle->pool);
 
+#if 0
     exit(0);
+#endif
 }
 
 
