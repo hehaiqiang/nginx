@@ -382,24 +382,21 @@ ngx_change_file_access(const char *n, int a)
 ngx_int_t
 ngx_set_file_time(u_char *name, ngx_fd_t fd, time_t s)
 {
-    FILETIME   atime, mtime;
-    ULONGLONG  usec;
+    uint64_t  intervals;
+    FILETIME  ft;
 
-    usec = s;
-    usec += 11644473600000000LL;
-    usec *= 10;
+    /* 116444736000000000 is commented in src/os/win32/ngx_time.c */
 
-    atime.dwLowDateTime = (DWORD) usec;
-    atime.dwHighDateTime = (DWORD) (usec >> 32);
+    intervals = s * 10000000 + 116444736000000000;
 
-    mtime.dwLowDateTime = (DWORD) usec;
-    mtime.dwHighDateTime = (DWORD) (usec >> 32);
+    ft.dwLowDateTime = (DWORD) intervals;
+    ft.dwHighDateTime = (DWORD) (intervals >> 32);
 
-    if (SetFileTime(fd, NULL, &atime, &mtime) == 0) {
-        return NGX_ERROR;
+    if (SetFileTime(fd, NULL, NULL, &ft) != 0) {
+        return NGX_OK;
     }
 
-    return NGX_OK;
+    return NGX_ERROR;
 }
 
 
@@ -429,7 +426,7 @@ ngx_file_size(ngx_file_info_t *sb)
 time_t
 ngx_file_mtime(ngx_file_info_t *sb)
 {
-    ULONGLONG  usec;
+    uint64_t  usec;
 
     if (sb->valid_info) {
         usec = sb->info.ftLastWriteTime.dwHighDateTime;
@@ -553,7 +550,7 @@ ngx_de_size(ngx_dir_t *dir)
 time_t
 ngx_de_mtime(ngx_dir_t *dir)
 {
-    ULONGLONG  usec;
+    uint64_t  usec;
 
     usec = dir->de.ftLastWriteTime.dwHighDateTime;
     usec <<= 32;
@@ -632,7 +629,9 @@ ngx_read_dir(ngx_dir_t *d)
 ngx_err_t
 ngx_trylock_fd(ngx_fd_t fd)
 {
-    OVERLAPPED  ovlp = { 0 };
+    OVERLAPPED  ovlp;
+
+    ngx_memzero(&ovlp, sizeof(OVERLAPPED));
 
     if (LockFileEx(fd, LOCKFILE_EXCLUSIVE_LOCK|LOCKFILE_FAIL_IMMEDIATELY, 0,
                    0xffffffff, 0xffffffff, &ovlp)
@@ -648,7 +647,9 @@ ngx_trylock_fd(ngx_fd_t fd)
 ngx_err_t
 ngx_lock_fd(ngx_fd_t fd)
 {
-    OVERLAPPED  ovlp = { 0 };
+    OVERLAPPED  ovlp;
+
+    ngx_memzero(&ovlp, sizeof(OVERLAPPED));
 
     if (LockFileEx(fd, LOCKFILE_EXCLUSIVE_LOCK, 0, 0xffffffff, 0xffffffff,
                    &ovlp)
@@ -664,7 +665,9 @@ ngx_lock_fd(ngx_fd_t fd)
 ngx_err_t
 ngx_unlock_fd(ngx_fd_t fd)
 {
-    OVERLAPPED  ovlp = { 0 };
+    OVERLAPPED  ovlp;
+
+    ngx_memzero(&ovlp, sizeof(OVERLAPPED));
 
     if (UnlockFileEx(fd, 0, 0xffffffff, 0xffffffff, &ovlp) == 0) {
         return ngx_errno;
