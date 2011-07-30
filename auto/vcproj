@@ -2,9 +2,9 @@
 # Copyright (C) Ngwsx
 
 
-NGX_SLN=$NGX_OBJS/nginx.sln
-NGX_SLN_TEMP=$NGX_OBJS/nginx_temp.sln
-NGX_VCPROJ=$NGX_OBJS/nginx.vcproj
+NGX_SLN=$NGX_OBJS/$NGINX_BIN.sln
+NGX_SLN_TEMP=$NGX_OBJS/$NGINX_BIN_temp.sln
+NGX_VCPROJ=$NGX_OBJS/$NGINX_BIN.vcproj
 
 #NGX_SLN_VER="9.00"
 NGX_SLN_VER="10.00"
@@ -25,7 +25,7 @@ echo "creating $NGX_SLN"
 cat << END                                                     > $NGX_SLN_TEMP
 Microsoft Visual Studio Solution File, Format Version $NGX_SLN_VER
 # $NGX_SLN_VER_STR
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nginx", "nginx.vcproj", "{DA97E9B5-A932-4041-BC4F-679CAB048297}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "$NGINX_BIN", "$NGINX_BIN.vcproj", "{DA97E9B5-A932-4041-BC4F-679CAB048297}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,11 +53,11 @@ ngx_use_pch=`echo $NGX_USE_PCH | sed -e "s/\//$ngx_regex_dirsep/g"`
 
 cat << END                                                     > $NGX_VCPROJ
 <?xml version="1.0" encoding="gb2312"?>
-<VisualStudioProject Name="nginx"
+<VisualStudioProject Name="$NGINX_BIN"
 	ProjectType="Visual C++"
 	Version="$NGX_VCPROJ_VER"
 	ProjectGUID="{DA97E9B5-A932-4041-BC4F-679CAB048297}"
-	RootNamespace="nginx"
+	RootNamespace="$NGINX_BIN"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613">
 	<Platforms>
@@ -109,7 +109,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				MinimalRebuild="false"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="0"
-                                ProgramDataBaseFileName="../../$NGX_OBJS/nginx.pdb"
+                                ProgramDataBaseFileName="../../$NGX_OBJS/$NGINX_BIN.pdb"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="\$(NOINHERIT)"
@@ -244,7 +244,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				AdditionalOptions="-debug"
 				AdditionalDependencies="$ngx_libs \$(NOINHERIT)"
 				ShowProgress="0"
-				OutputFile="../../$NGX_OBJS/nginx.exe"
+				OutputFile="../../$NGX_OBJS/$NGINX_BIN.exe"
 				LinkIncremental="0"
 				GenerateManifest="false"
 				AdditionalManifestDependencies="\$(NOINHERIT)"
@@ -257,7 +257,7 @@ cat << END                                                    >> $NGX_VCPROJ
 				DelayLoadDLLs="\$(NOINHERIT)"
 				AssemblyLinkResource="\$(NOINHERIT)"
 				GenerateDebugInformation="true"
-                                ProgramDatabaseFile="../../$NGX_OBJS/nginx.pdb"
+                                ProgramDatabaseFile="../../$NGX_OBJS/$NGINX_BIN.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="0"
 				DataExecutionPrevention="0"
