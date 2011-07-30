@@ -87,7 +87,7 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
 
     ovlp = (OVERLAPPED *) &ev->ovlp;
     ovlp->Offset = (DWORD) offset;
-    ovlp->OffsetHigh = (DWORD) (((ULONGLONG) offset) >> 32);
+    ovlp->OffsetHigh = (DWORD) (((uint64_t) offset) >> 32);
 
     /* ReadFileEx */
 
@@ -174,7 +174,7 @@ ngx_file_aio_write(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
 
     ovlp = (OVERLAPPED *) &ev->ovlp;
     ovlp->Offset = (DWORD) offset;
-    ovlp->OffsetHigh = (DWORD) (((ULONGLONG) offset) >> 32);
+    ovlp->OffsetHigh = (DWORD) (((uint64_t) offset) >> 32);
 
     /* WriteFileEx */
 

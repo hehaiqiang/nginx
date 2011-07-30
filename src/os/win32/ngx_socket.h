@@ -15,7 +15,12 @@
 #define NGX_WRITE_SHUTDOWN SD_SEND
 
 
+#if defined( __MINGW32__)
+typedef int     ngx_socket_t;
+#else
 typedef SOCKET  ngx_socket_t;
+#endif
+
 typedef int     socklen_t;
 
 

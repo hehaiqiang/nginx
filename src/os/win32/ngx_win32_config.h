@@ -60,8 +60,13 @@ typedef unsigned short    uint16_t;
 typedef int               int32_t;
 typedef unsigned int      uint32_t;
 
+#ifdef _MSC_VER
 typedef __int64           int64_t;
 typedef unsigned __int64  uint64_t;
+#else
+typedef long long         int64_t;
+typedef unsigned long long  uint64_t;
+#endif
 
 
 #if (NGX_PTR_SIZE == 4)
@@ -137,7 +142,11 @@ typedef uint64_t          uintptr_t;
 
 #ifdef _MSC_VER
 
+#if 0
 #pragma warning(default:4201)
+#else
+#pragma warning(disable:4201)
+#endif
 
 /* disable some "-W4" level warnings */
 

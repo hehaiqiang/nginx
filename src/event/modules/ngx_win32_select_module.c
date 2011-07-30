@@ -147,8 +147,8 @@ ngx_select_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
         return NGX_ERROR;
     }
 
-    if ((event == NGX_READ_EVENT) && (max_read >= FD_SETSIZE)
-        || (event == NGX_WRITE_EVENT) && (max_write >= FD_SETSIZE))
+    if (((event == NGX_READ_EVENT) && (max_read >= FD_SETSIZE))
+        || ((event == NGX_WRITE_EVENT) && (max_write >= FD_SETSIZE)))
     {
         ngx_log_error(NGX_LOG_ERR, ev->log, 0,
                       "maximum number of descriptors "
@@ -157,11 +157,11 @@ ngx_select_add_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
     }
 
     if (event == NGX_READ_EVENT) {
-        FD_SET(c->fd, &master_read_fd_set);
+        FD_SET((unsigned) c->fd, &master_read_fd_set);
         max_read++;
 
     } else if (event == NGX_WRITE_EVENT) {
-        FD_SET(c->fd, &master_write_fd_set);
+        FD_SET((unsigned) c->fd, &master_write_fd_set);
         max_write++;
     }
 
@@ -193,11 +193,11 @@ ngx_select_del_event(ngx_event_t *ev, ngx_int_t event, ngx_uint_t flags)
                    "select del event fd:%d ev:%i", c->fd, event);
 
     if (event == NGX_READ_EVENT) {
-        FD_CLR(c->fd, &master_read_fd_set);
+        FD_CLR((unsigned) c->fd, &master_read_fd_set);
         max_read--;
 
     } else if (event == NGX_WRITE_EVENT) {
-        FD_CLR(c->fd, &master_write_fd_set);
+        FD_CLR((unsigned) c->fd, &master_write_fd_set);
         max_write--;
     }
 
@@ -363,7 +363,7 @@ ngx_select_repair_fd_sets(ngx_cycle_t *cycle)
             ngx_log_error(NGX_LOG_ALERT, cycle->log, err,
                           "invalid descriptor #%d in read fd_set", s);
 
-            FD_CLR(s, &master_read_fd_set);
+            FD_CLR((unsigned) s, &master_read_fd_set);
         }
     }
 
@@ -378,7 +378,7 @@ ngx_select_repair_fd_sets(ngx_cycle_t *cycle)
             ngx_log_error(NGX_LOG_ALERT, cycle->log, err,
                           "invalid descriptor #%d in write fd_set", s);
 
-            FD_CLR(s, &master_write_fd_set);
+            FD_CLR((unsigned) s, &master_write_fd_set);
         }
     }
 }

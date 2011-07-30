@@ -52,7 +52,8 @@ typedef volatile ngx_atomic_uint_t  ngx_atomic_t;
 #define NGX_ATOMIC_T_LEN            (sizeof("-2147483648") - 1)
 
 
-#if defined( __WATCOMC__ ) || defined( __BORLANDC__ ) || ( _MSC_VER >= 1300 )
+#if defined( __WATCOMC__ ) || defined( __BORLANDC__ ) || ( _MSC_VER >= 1300 ) \
+    || defined( __MINGW32__ ) || defined( __TINYC__ )
 
 /* the new SDK headers */
 

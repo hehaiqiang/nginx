@@ -237,8 +237,8 @@ ngx_transmitfile_chain(ngx_connection_t *c, ngx_chain_t *in, off_t limit)
 
         file_pos = file->file_pos;
 
-        ovlp->Offset = (DWORD) ((LONGLONG) file_pos & 0xffffffff);
-        ovlp->OffsetHigh = (DWORD) ((LONGLONG) file_pos >> 32);
+        ovlp->Offset = (DWORD) ((int64_t) file_pos & 0xffffffff);
+        ovlp->OffsetHigh = (DWORD) ((int64_t) file_pos >> 32);
 
         ngx_log_debug4(NGX_LOG_DEBUG_EVENT, c->log, 0,
                        "TransmitFile() h:%z t:%z f:%O-%z",

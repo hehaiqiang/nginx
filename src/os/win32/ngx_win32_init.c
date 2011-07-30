@@ -108,7 +108,7 @@ ngx_os_init(ngx_log_t *log)
     u_long          bytes;
     SOCKET          s;
     WSADATA         wsadata;
-    u_short         port;
+    in_port_t       port;
     ngx_err_t       err;
     ngx_uint_t      n;
     SOCKADDR_IN     sa;
