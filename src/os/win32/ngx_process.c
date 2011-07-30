@@ -8,9 +8,6 @@
 #include <ngx_core.h>
 
 
-#define NGX_SERVICE_NAME  "NGINX"
-
-
 extern int ngx_main(int argc, char *const *argv);
 
 static ngx_uint_t ngx_stdcall ngx_service_handler(ngx_uint_t ctl,
@@ -27,6 +24,7 @@ ngx_process_t    ngx_processes[NGX_MAX_PROCESSES];
 
 ngx_uint_t       ngx_run_as_service;
 
+static u_char                 ngx_service_name[NGX_MAX_PATH];
 static SERVICE_STATUS         ngx_ss;
 static SERVICE_STATUS_HANDLE  ngx_sshandle;
 
@@ -74,7 +72,11 @@ ngx_spawn_process(ngx_cycle_t *cycle, char *name, ngx_int_t respawn)
 
     ctx.path = file;
     ctx.name = name;
+#if 0
     ctx.args = GetCommandLine();
+#else
+    ctx.args = NULL;
+#endif
     ctx.argv = NULL;
     ctx.envp = NULL;
 
@@ -284,7 +286,7 @@ ngx_process_get_status(void)
     for (i = 0; i < ngx_last_process; i++) {
         process = &ngx_processes[i];
 
-        if (process->pid == -1 || process->handle == NULL) {
+        if ((int) process->pid == -1 || process->handle == NULL) {
             continue;
         }
 
@@ -302,7 +304,7 @@ ngx_process_get_status(void)
             continue;
         }
 
-        if (rc == WAIT_FAILED) {
+        if (rc == (ngx_int_t) WAIT_FAILED) {
             ngx_log_error(NGX_LOG_ALERT, ngx_cycle->log, ngx_errno,
                           "WaitForSingleObject() handle:%d failed",
                           process->handle);
@@ -330,7 +332,7 @@ ngx_service(LPSERVICE_MAIN_FUNCTION func)
     };
 
     if (StartServiceCtrlDispatcher(stes) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "StartServiceCtrlDispatcher() failed");
         return NGX_ERROR;
     }
@@ -342,11 +344,11 @@ ngx_service(LPSERVICE_MAIN_FUNCTION func)
 ngx_int_t
 ngx_set_service_handler(void)
 {
-    ngx_sshandle = RegisterServiceCtrlHandlerEx(NGX_SERVICE_NAME,
+    ngx_sshandle = RegisterServiceCtrlHandlerEx((char *) ngx_service_name,
                             (LPHANDLER_FUNCTION_EX) ngx_service_handler, NULL);
 
     if (ngx_sshandle == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "RegisterServiceCtrlHandlerEx() failed");
         return NGX_ERROR;
     }
@@ -361,7 +363,7 @@ ngx_set_service_handler(void)
     ngx_ss.dwWaitHint = 0;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_START_PENDING) failed");
         return NGX_ERROR;
     }
@@ -377,7 +379,7 @@ ngx_set_service_running_status(void)
     ngx_ss.dwCurrentState = SERVICE_RUNNING;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_RUNNING) failed");
         return NGX_ERROR;
     }
@@ -393,7 +395,7 @@ ngx_set_service_stopped_status(void)
     ngx_ss.dwCurrentState = SERVICE_STOPPED;
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_STOPPED) failed");
         return NGX_ERROR;
     }
@@ -412,12 +414,13 @@ ngx_install_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
 
-    service = OpenService(manager, NGX_SERVICE_NAME, SERVICE_ALL_ACCESS);
+    service = OpenService(manager, (char *) ngx_service_name,
+                          SERVICE_ALL_ACCESS);
 
     err = ngx_errno;
 
@@ -425,10 +428,11 @@ ngx_install_service(void)
 
         p = exec_path;
         p += GetModuleFileName(NULL, (LPTSTR) p, NGX_MAX_PATH);
-        p = ngx_cpymem(p, " -s", sizeof(" -s") - 1);
+        p = ngx_cpymem(p, " -z", sizeof(" -z") - 1);
         *p = '\0';
 
-        service = CreateService(manager, NGX_SERVICE_NAME, NGX_SERVICE_NAME,
+        service = CreateService(manager, (char *) ngx_service_name,
+                                (char *) ngx_service_name,
                                 SERVICE_ALL_ACCESS,
                                 SERVICE_WIN32_OWN_PROCESS
                                 |SERVICE_INTERACTIVE_PROCESS,
@@ -436,15 +440,14 @@ ngx_install_service(void)
                                 (LPCTSTR) exec_path, NULL, NULL, NULL, NULL,
                                 NULL);
         if (service == NULL) {
-            ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+            ngx_message_box(ngx_service_name, 0, ngx_errno,
                             "CreateService() failed");
             CloseServiceHandle(manager);
             return NGX_ERROR;
         }
 
     } else if (service == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
-                        "OpenService() failed");
+        ngx_message_box(ngx_service_name, 0, ngx_errno, "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -466,12 +469,12 @@ ngx_uninstall_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
 
-    service = OpenService(manager, NGX_SERVICE_NAME, DELETE);
+    service = OpenService(manager, (char *) ngx_service_name, DELETE);
 
     err = ngx_errno;
 
@@ -480,8 +483,7 @@ ngx_uninstall_service(void)
         return NGX_OK;
 
     } else if (service == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, err,
-                        "OpenService() failed");
+        ngx_message_box(ngx_service_name, 0, err, "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -489,7 +491,7 @@ ngx_uninstall_service(void)
     rc = NGX_OK;
 
     if (DeleteService(service) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "DeleteService() failed");
         rc = NGX_ERROR;
     }
@@ -515,15 +517,15 @@ ngx_start_service(void)
 
     manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (manager == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "OpenSCManager() failed");
         return NGX_ERROR;
     }
 
-    service = OpenService(manager, NGX_SERVICE_NAME, SERVICE_ALL_ACCESS);
+    service = OpenService(manager, (char *) ngx_service_name,
+                          SERVICE_ALL_ACCESS);
     if (service == NULL) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
-                        "OpenService() failed");
+        ngx_message_box(ngx_service_name, 0, ngx_errno, "OpenService() failed");
         CloseServiceHandle(manager);
         return NGX_ERROR;
     }
@@ -538,8 +540,7 @@ ngx_start_service(void)
             return NGX_OK;
         }
 
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, err,
-                        "StartService() failed");
+        ngx_message_box(ngx_service_name, 0, err, "StartService() failed");
         return NGX_ERROR;
     }
 
@@ -617,7 +618,7 @@ ngx_stop_service(void)
         return NGX_ERROR;
     }
 
-    service = OpenService(manager, NGX_SERVICE_NAME,
+    service = OpenService(manager, (char *) ngx_service_name,
                           SERVICE_STOP|SERVICE_QUERY_STATUS);
     if (service == NULL) {
         CloseServiceHandle(manager);
@@ -716,7 +717,7 @@ ngx_service_handler(ngx_uint_t ctl, ngx_uint_t type, void *data, void *ctx)
     case SERVICE_CONTROL_STOP:
     case SERVICE_CONTROL_SHUTDOWN:
 
-        ngx_atomic_cmp_set(&ngx_quit, 0, 1);
+        ngx_signal_process((ngx_cycle_t *) ngx_cycle, "quit");
 
         ngx_ss.dwCurrentState = SERVICE_STOP_PENDING;
         ngx_ss.dwWin32ExitCode = NO_ERROR;
@@ -734,7 +735,7 @@ ngx_service_handler(ngx_uint_t ctl, ngx_uint_t type, void *data, void *ctx)
     }
 
     if (SetServiceStatus(ngx_sshandle, &ngx_ss) == 0) {
-        ngx_message_box((u_char *) NGX_SERVICE_NAME, 0, ngx_errno,
+        ngx_message_box(ngx_service_name, 0, ngx_errno,
                         "SetServiceStatus(SERVICE_STOP_PENDING) failed");
     }
 
@@ -745,6 +746,7 @@ ngx_service_handler(ngx_uint_t ctl, ngx_uint_t type, void *data, void *ctx)
 static LONG WINAPI
 ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
 {
+#if !defined(__MINGW32__)
     u_char                          file[NGX_MAX_PATH];
     ngx_tm_t                        tm;
     ngx_fd_t                        fd;
@@ -774,6 +776,7 @@ ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
                       MiniDumpNormal, &ei, NULL, NULL);
 
     ngx_close_file(fd);
+#endif
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
@@ -782,7 +785,7 @@ ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
 int ngx_cdecl
 main(int argc, char *const *argv)
 {
-    u_char     *p;
+    u_char     *p, *start, *last, *dot, *slash;
     ngx_int_t   i;
 
     SetUnhandledExceptionFilter(ngx_unhandled_exception_filter);
@@ -797,8 +800,35 @@ main(int argc, char *const *argv)
      *   -z, run as service.
      */
 
+    start = (u_char *) argv[0];
+    last = start + ngx_strlen(start);
+    dot = NULL;
+    slash = NULL;
+
+    for (p = last; p >= start; p--) {
+        if (*p == '\\' || *p == '/') {
+            slash = p;
+            break;
+        }
+
+        if (*p == '.') {
+            dot = p;
+        }
+    }
+
+    if (slash != NULL) {
+        start = ++slash;
+    }
+
+    if (dot != NULL) {
+        last = dot;
+    }
+
+    ngx_memcpy(ngx_service_name, start, last - start);
+
 #if 0
-    ngx_message_box("command line", 0, 0, "%s", cmd_line);
+    ngx_message_box((u_char *) "nginx", 0, 0,
+                    "%s %s", argv[0], ngx_service_name);
 #endif
 
     for (i = 1; i < argc; i++) {
