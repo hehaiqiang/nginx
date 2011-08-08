@@ -11,6 +11,9 @@ ZLIB_CONF_ARGS= \
 MD5_CONF_ARGS= \
 	--with-md5=$(ADDON_DIR)/../../../lib/md5/win32
 
+SHA1_CONF_ARGS= \
+	--with-sha1=$(ADDON_DIR)/../../../lib/sha1/win32
+
 OPENSSL_CONF_ARGS= \
 	--with-openssl=$(ADDON_DIR)/../../../lib/openssl \
 	--with-openssl-opt=enable-tlsext
