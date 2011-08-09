@@ -66,8 +66,8 @@ ngx_fd_t ngx_open_file(u_char *path, int mode, int create, int access);
 
 #define NGX_FILE_RDONLY          0x01
 #define NGX_FILE_WRONLY          0x02
-#define NGX_FILE_RDWR            0x03
-#define NGX_FILE_APPEND          0x04
+#define NGX_FILE_RDWR            0x04
+#define NGX_FILE_APPEND          0x08
 #define NGX_FILE_NONBLOCK        0
 #define NGX_FILE_OVERLAPPED      0x10
 

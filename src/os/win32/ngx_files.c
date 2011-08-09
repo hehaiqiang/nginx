@@ -18,7 +18,7 @@ ngx_uint_t  ngx_file_aio = 1;
 ngx_fd_t
 ngx_open_file(u_char *path, int mode, int create, int access)
 {
-    int       da, sm, cd, fa;
+    int       da, sm, fa;
     ngx_fd_t  fd;
 
     /* Desired Access */
@@ -34,6 +34,9 @@ ngx_open_file(u_char *path, int mode, int create, int access)
 
     } else if (mode & NGX_FILE_APPEND) {
         da = FILE_APPEND_DATA|SYNCHRONIZE;
+
+    } else {
+        da = GENERIC_READ;
     }
 
     /* Share Mode */
