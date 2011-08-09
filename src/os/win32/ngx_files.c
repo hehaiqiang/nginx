@@ -23,51 +23,34 @@ ngx_open_file(u_char *path, int mode, int create, int access)
 
     /* Desired Access */
 
-    if (mode & NGX_FILE_TRUNCATE) {
-        da = NGX_FILE_WRONLY;
+    if (mode & NGX_FILE_RDONLY) {
+        da = GENERIC_READ;
+
+    } else if (mode & NGX_FILE_WRONLY) {
+        da = GENERIC_WRITE;
+
+    } else if (mode & NGX_FILE_RDWR) {
+        da = GENERIC_READ|GENERIC_WRITE;
+
     } else if (mode & NGX_FILE_APPEND) {
-        da = NGX_FILE_WRONLY;
-    } else {
-        da = mode;
+        da = FILE_APPEND_DATA|SYNCHRONIZE;
     }
 
-    /* TODO: Share Mode */
+    /* Share Mode */
 
     sm = FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE;
 
-    /* Creation Disposition */
+    /* Flags And Attributes */
 
-    if (create & NGX_FILE_OPEN) {
-        cd = OPEN_EXISTING;
-
-    } else {
-        cd = OPEN_ALWAYS;
-    }
-
-    /* TODO: Flags And Attributes */
-
-    fa = FILE_ATTRIBUTE_NORMAL|FILE_FLAG_BACKUP_SEMANTICS;
+    fa = FILE_FLAG_BACKUP_SEMANTICS;
 
     if (mode & NGX_FILE_OVERLAPPED) {
         fa |= FILE_FLAG_OVERLAPPED;
     }
 
-    fd = CreateFile((LPCTSTR) path, da, sm, NULL, cd, fa, NULL);
+    fd = CreateFile((LPCTSTR) path, da, sm, NULL, create, fa, NULL);
     if (fd == INVALID_HANDLE_VALUE) {
         return NGX_INVALID_FILE;
-    }
-
-    if (mode & NGX_FILE_TRUNCATE) {
-        if (SetEndOfFile(fd) == 0) {
-            CloseHandle(fd);
-            return NGX_INVALID_FILE;
-        }
-
-    } else if (mode & NGX_FILE_APPEND) {
-        if (SetFilePointer(fd, 0, NULL, FILE_END) == INVALID_SET_FILE_POINTER) {
-            CloseHandle(fd);
-            return NGX_INVALID_FILE;
-        }
     }
 
     return fd;
@@ -153,7 +136,6 @@ ngx_write_file(ngx_file_t *file, u_char *buf, size_t size, off_t offset)
 ngx_fd_t
 ngx_open_tempfile(u_char *name, ngx_uint_t persistent, ngx_uint_t access)
 {
-    int       sm;
     u_char    buf[NGX_MAX_PATH], c, *p, *last;
     ngx_fd_t  fd;
 
@@ -173,11 +155,9 @@ ngx_open_tempfile(u_char *name, ngx_uint_t persistent, ngx_uint_t access)
         p++;
     }
 
-    /* TODO: Share Mode */
-
-    sm = FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE;
-
-    fd = CreateFile((LPCTSTR) name, NGX_FILE_RDWR, sm, NULL, CREATE_NEW,
+    fd = CreateFile((LPCTSTR) name, GENERIC_READ|GENERIC_WRITE,
+                    FILE_SHARE_READ|FILE_SHARE_WRITE|FILE_SHARE_DELETE,
+                    NULL, CREATE_NEW,
                     persistent ? FILE_ATTRIBUTE_NORMAL
                     : FILE_FLAG_DELETE_ON_CLOSE, NULL);
 

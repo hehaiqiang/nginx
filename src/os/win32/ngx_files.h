@@ -64,15 +64,16 @@ typedef struct {
 ngx_fd_t ngx_open_file(u_char *path, int mode, int create, int access);
 #define ngx_open_file_n          "CreateFile()"
 
-#define NGX_FILE_RDONLY          GENERIC_READ
-#define NGX_FILE_WRONLY          GENERIC_WRITE
-#define NGX_FILE_RDWR            GENERIC_READ|GENERIC_WRITE
-#define NGX_FILE_CREATE_OR_OPEN  0x01
-#define NGX_FILE_OPEN            0x02
-#define NGX_FILE_TRUNCATE        0x04
-#define NGX_FILE_APPEND          0x08
-#define NGX_FILE_NONBLOCK        0x10
-#define NGX_FILE_OVERLAPPED      0x20
+#define NGX_FILE_RDONLY          0x01
+#define NGX_FILE_WRONLY          0x02
+#define NGX_FILE_RDWR            0x03
+#define NGX_FILE_APPEND          0x04
+#define NGX_FILE_NONBLOCK        0
+#define NGX_FILE_OVERLAPPED      0x10
+
+#define NGX_FILE_CREATE_OR_OPEN  OPEN_ALWAYS
+#define NGX_FILE_OPEN            OPEN_EXISTING
+#define NGX_FILE_TRUNCATE        CREATE_ALWAYS
 
 #define NGX_FILE_DEFAULT_ACCESS  0
 #define NGX_FILE_OWNER_ACCESS    0

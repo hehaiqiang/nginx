@@ -763,7 +763,7 @@ ngx_unhandled_exception_filter(EXCEPTION_POINTERS *ex)
                  &ngx_cycle->prefix, tm.ngx_tm_year, tm.ngx_tm_mon,
                  tm.ngx_tm_mday, tm.ngx_tm_hour, tm.ngx_tm_min, tm.ngx_tm_sec);
 
-    fd = ngx_open_file(file, NGX_FILE_TRUNCATE, NGX_FILE_CREATE_OR_OPEN, 0);
+    fd = ngx_open_file(file, NGX_FILE_RDWR, NGX_FILE_TRUNCATE, 0);
     if (fd == NGX_INVALID_FILE) {
         return EXCEPTION_EXECUTE_HANDLER;
     }
