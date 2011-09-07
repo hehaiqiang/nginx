@@ -316,6 +316,7 @@ ngx_int_t ngx_read_dir(ngx_dir_t *dir);
 #define ngx_de_is_link(dir)      0 /* (S_ISLNK((dir)->info.st_mode)) */
 #define ngx_de_access(dir)       0 /* (((dir)->info.st_mode) & 0777) */
 off_t ngx_de_size(ngx_dir_t *dir);
+#define ngx_de_fs_size(dir)         ngx_de_size(dir)
 time_t ngx_de_mtime(ngx_dir_t *dir);
 
 

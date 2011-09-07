@@ -78,22 +78,20 @@ ngx_mutex_init(ngx_log_t *log, ngx_uint_t flags)
 /* STUB */
 
 void
-ngx_mutex_lock(ngx_mutex_t *m)
-{
+ngx_mutex_lock(ngx_mutex_t *m) {
     return;
 }
 
 
+
 ngx_int_t
-ngx_mutex_trylock(ngx_mutex_t *m)
-{
+ngx_mutex_trylock(ngx_mutex_t *m) {
     return NGX_OK;
 }
 
 
 void
-ngx_mutex_unlock(ngx_mutex_t *m)
-{
+ngx_mutex_unlock(ngx_mutex_t *m) {
     return;
 }
 
