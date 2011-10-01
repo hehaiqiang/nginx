@@ -92,8 +92,10 @@ HTTP_BROWSER=YES
 HTTP_SECURE_LINK=NO
 HTTP_DEGRADATION=NO
 HTTP_FLV=NO
+HTTP_MP4=NO
 HTTP_GZIP_STATIC=NO
 HTTP_UPSTREAM_IP_HASH=YES
+HTTP_UPSTREAM_KEEPALIVE=YES
 
 # STUB
 HTTP_STUB_STATUS=NO
@@ -201,6 +203,7 @@ do
         --with-http_sub_module)          HTTP_SUB=YES               ;;
         --with-http_dav_module)          HTTP_DAV=YES               ;;
         --with-http_flv_module)          HTTP_FLV=YES               ;;
+        --with-http_mp4_module)          HTTP_MP4=YES               ;;
         --with-http_gzip_static_module)  HTTP_GZIP_STATIC=YES       ;;
         --with-http_random_index_module) HTTP_RANDOM_INDEX=YES      ;;
         --with-http_secure_link_module)  HTTP_SECURE_LINK=YES       ;;
@@ -229,6 +232,7 @@ do
         --without-http_empty_gif_module) HTTP_EMPTY_GIF=NO          ;;
         --without-http_browser_module)   HTTP_BROWSER=NO            ;;
         --without-http_upstream_ip_hash_module) HTTP_UPSTREAM_IP_HASH=NO ;;
+        --without-http_upstream_keepalive_module) HTTP_UPSTREAM_KEEPALIVE=NO ;;
 
         --with-http_perl_module)         HTTP_PERL=YES              ;;
         --with-perl_modules_path=*)      NGX_PERL_MODULES="$value"  ;;
@@ -336,6 +340,7 @@ cat << END
   --with-http_sub_module             enable ngx_http_sub_module
   --with-http_dav_module             enable ngx_http_dav_module
   --with-http_flv_module             enable ngx_http_flv_module
+  --with-http_mp4_module             enable ngx_http_mp4_module
   --with-http_gzip_static_module     enable ngx_http_gzip_static_module
   --with-http_random_index_module    enable ngx_http_random_index_module
   --with-http_secure_link_module     enable ngx_http_secure_link_module
