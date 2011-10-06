@@ -128,7 +128,7 @@ ngx_shm_zone_t *ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name,
     size_t size, void *tag);
 
 
-extern volatile ngx_cycle_t  *ngx_cycle;
+extern volatile ngx_dll ngx_cycle_t  *ngx_cycle;
 extern ngx_array_t            ngx_old_cycles;
 extern ngx_module_t           ngx_core_module;
 extern ngx_uint_t             ngx_test_config;

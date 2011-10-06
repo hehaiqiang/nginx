@@ -460,7 +460,7 @@ extern ngx_event_actions_t   ngx_event_actions;
 #define ngx_del_timer        ngx_event_del_timer
 
 
-extern ngx_os_io_t  ngx_io;
+extern ngx_dll ngx_os_io_t  ngx_io;
 
 #define ngx_recv             ngx_io.recv
 #define ngx_recv_chain       ngx_io.recv_chain
@@ -529,7 +529,7 @@ extern ngx_atomic_t  *ngx_stat_writing;
 
 
 extern sig_atomic_t           ngx_event_timer_alarm;
-extern ngx_uint_t             ngx_event_flags;
+extern ngx_dll ngx_uint_t             ngx_event_flags;
 extern ngx_module_t           ngx_events_module;
 extern ngx_module_t           ngx_event_core_module;
 

@@ -24,11 +24,11 @@ void ngx_event_expire_timers(void);
 
 
 #if (NGX_THREADS)
-extern ngx_mutex_t  *ngx_event_timer_mutex;
+extern ngx_dll ngx_mutex_t  *ngx_event_timer_mutex;
 #endif
 
 
-extern ngx_thread_volatile ngx_rbtree_t  ngx_event_timer_rbtree;
+extern ngx_thread_volatile ngx_dll ngx_rbtree_t  ngx_event_timer_rbtree;
 
 
 static ngx_inline void

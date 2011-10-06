@@ -44,7 +44,7 @@ extern volatile ngx_str_t    ngx_cached_http_log_iso8601;
  * milliseconds elapsed since epoch and truncated to ngx_msec_t,
  * used in event timers
  */
-extern volatile ngx_msec_t  ngx_current_msec;
+extern volatile ngx_dll ngx_msec_t  ngx_current_msec;
 
 
 #endif /* _NGX_TIMES_H_INCLUDED_ */

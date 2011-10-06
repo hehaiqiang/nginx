@@ -198,6 +198,12 @@ typedef uint64_t          uintptr_t;
 #define ngx_cdecl         __cdecl
 #define ngx_libc_cdecl
 
+#if (NGX_DLL)
+#define ngx_dll           __declspec(dllimport)
+#else
+#define ngx_dll           __declspec(dllexport)
+#endif
+
 
 #define ngx_random        rand
 

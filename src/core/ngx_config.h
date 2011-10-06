@@ -72,6 +72,8 @@
 #define ngx_cdecl
 #define ngx_libc_cdecl
 
+#define ngx_dll
+
 #endif
 
 typedef intptr_t        ngx_int_t;
