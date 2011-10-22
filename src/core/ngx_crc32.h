@@ -12,8 +12,8 @@
 #include <ngx_core.h>
 
 
-extern uint32_t  *ngx_crc32_table_short;
-extern uint32_t   ngx_crc32_table256[];
+extern ngx_dll uint32_t  *ngx_crc32_table_short;
+extern ngx_dll uint32_t   ngx_crc32_table256[];
 
 
 static ngx_inline uint32_t

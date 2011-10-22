@@ -248,7 +248,7 @@ typedef struct {
 } ngx_event_actions_t;
 
 
-extern ngx_event_actions_t   ngx_event_actions;
+extern ngx_dll ngx_event_actions_t   ngx_event_actions;
 
 
 /*
