@@ -206,6 +206,7 @@ typedef uint64_t          uintptr_t;
 
 
 #define ngx_random        rand
+#define ngx_debug_init()
 
 #define vsnprintf         _vsnprintf
 
