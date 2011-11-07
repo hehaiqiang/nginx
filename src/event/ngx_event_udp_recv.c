@@ -88,6 +88,11 @@ ngx_event_udp_aio_recv(ngx_event_t *ev)
     lc = ev->data;
     ls = lc->listening;
 
+    if (ev->error) {
+        ngx_destroy_pool(event->pool);
+        goto post_udp_recv;
+    }
+
 #if (NGX_STAT_STUB)
     (void) ngx_atomic_fetch_add(ngx_stat_accepted, 1);
 #endif
