@@ -67,7 +67,7 @@ ngx_event_udp_recv(ngx_event_t *ev)
         return;
     }
 
-    event.event.available = n;
+    event.buffer->last += n;
 
     ngx_event_udp_aio_recv((ngx_event_t *) &event);
 }
@@ -113,8 +113,12 @@ ngx_event_udp_aio_recv(ngx_event_t *ev)
     c->pool = event->pool;
     c->buffer = event->buffer;
 
-    c->buffer->last += ev->available;
-    ev->available = 0;
+#if (NGX_WIN32) && (NGX_HAVE_IOCP)
+    if (ngx_event_flags & NGX_USE_IOCP_EVENT) {
+        c->buffer->last += ev->available;
+        ev->available = 0;
+    }
+#endif
 
     c->sockaddr = ngx_palloc(c->pool, event->socklen);
     if (c->sockaddr == NULL) {
