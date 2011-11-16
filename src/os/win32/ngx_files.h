@@ -136,6 +136,7 @@ ngx_write_fd(ngx_fd_t fd, void *buf, size_t n)
 
 #define ngx_linefeed(p)          do { *p++ = CR; *p++ = LF; } while (0);
 #define NGX_LINEFEED_SIZE        2
+#define NGX_LINEFEED             CRLF
 
 
 #define ngx_rename_file(o, n)                                                  \
@@ -316,7 +317,7 @@ ngx_int_t ngx_read_dir(ngx_dir_t *dir);
 #define ngx_de_is_link(dir)      0 /* (S_ISLNK((dir)->info.st_mode)) */
 #define ngx_de_access(dir)       0 /* (((dir)->info.st_mode) & 0777) */
 off_t ngx_de_size(ngx_dir_t *dir);
-#define ngx_de_fs_size(dir)         ngx_de_size(dir)
+#define ngx_de_fs_size(dir)      ngx_de_size(dir)
 time_t ngx_de_mtime(ngx_dir_t *dir);
 
 
