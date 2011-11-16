@@ -74,14 +74,6 @@ typedef unsigned long long  uint64_t;
 typedef uint32_t          size_t;
 typedef int32_t           ssize_t;
 
-#if 0
-typedef int32_t           off_t;
-typedef int32_t           _off_t;
-#else
-typedef int64_t           off_t;
-typedef int64_t           _off_t;
-#endif
-
 typedef long              time_t;
 
 typedef int32_t           intptr_t;
@@ -92,15 +84,16 @@ typedef uint32_t          uintptr_t;
 typedef uint64_t          size_t;
 typedef int64_t           ssize_t;
 
-typedef int64_t           off_t;
-typedef int64_t           _off_t;
-
 typedef int64_t           time_t;
 
 typedef int64_t           intptr_t;
 typedef uint64_t          uintptr_t;
 
 #endif
+
+
+typedef int64_t           off_t;
+typedef int64_t           _off_t;
 
 
 #if (NGX_PTR_SIZE == 4)
@@ -114,6 +107,8 @@ typedef uint64_t          uintptr_t;
 #define _UINTPTR_T_DEFINED
 
 
+#define WIN32             0x0400
+
 #if (0)
 #define _WIN32_WINNT      0x0500  /* Windows 2000 */
 #elif (1)
@@ -125,6 +120,7 @@ typedef uint64_t          uintptr_t;
 #endif
 
 
+#define STRICT
 #define WIN32_LEAN_AND_MEAN
 
 
