@@ -45,8 +45,7 @@ ngx_event_udp_recv(ngx_event_t *ev)
         return;
     }
 
-    event.buffer = ngx_create_temp_buf(event.pool,
-                                       ls->udp_recv_buffer_size);
+    event.buffer = ngx_create_temp_buf(event.pool, ls->udp_recv_buffer_size);
     if (event.buffer == NULL) {
         ngx_destroy_pool(event.pool);
         return;
@@ -294,8 +293,7 @@ ngx_event_post_one_udp_recv(ngx_listening_t *ls, ngx_udp_recv_event_t *event)
         return NGX_ERROR;
     }
 
-    event->buffer = ngx_create_temp_buf(event->pool,
-                                        ls->udp_recv_buffer_size);
+    event->buffer = ngx_create_temp_buf(event->pool, ls->udp_recv_buffer_size);
     if (event->buffer == NULL) {
         ngx_destroy_pool(event->pool);
         return NGX_ERROR;
