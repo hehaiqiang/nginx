@@ -159,6 +159,11 @@ retry:
 
         wev->ovlp.posted_zero_byte = 0;
 
+        if (cl != NULL) {
+            in = cl;
+            goto retry;
+        }
+
         return cl;
     }
 
