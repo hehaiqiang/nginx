@@ -15,6 +15,11 @@
 #define NGX_WRITE_SHUTDOWN SD_SEND
 
 
+#if (NGX_UDT)
+#define SOCK_UDT  (SOCK_STREAM - 1)
+#endif
+
+
 #if defined( __MINGW32__)
 typedef int     ngx_socket_t;
 #else
@@ -24,10 +29,45 @@ typedef SOCKET  ngx_socket_t;
 typedef int     socklen_t;
 
 
+#if (NGX_UDT)
+typedef struct {
+    ngx_socket_t  fd;
+    ngx_uint_t    type;
+} ngx_os_socket_t;
+#endif
+
+
+#if !(NGX_UDT)
 #define ngx_socket(af, type, proto)                                          \
     WSASocket(af, type, proto, NULL, 0, WSA_FLAG_OVERLAPPED)
 
 #define ngx_socket_n        "WSASocket()"
+#else
+int ngx_socket(int af, int type, int proto);
+#define ngx_socket_n        "ngx_socket()"
+
+int ngx_bind(int s, const struct sockaddr *addr, socklen_t addr_len);
+int ngx_listen(int s, int backlog);
+int ngx_accept(int s, struct sockaddr *addr, socklen_t *addr_len);
+int ngx_connect(int s, const struct sockaddr *addr, socklen_t addr_len);
+
+#if 0
+int ngx_socket_errno(int s);
+#endif
+
+int ngx_getpeername(int s, struct sockaddr *addr, socklen_t *addr_len);
+int ngx_getsockname(int s, struct sockaddr *addr, socklen_t *addr_len);
+
+int ngx_getsockopt(int s, int level, int opt_name, void *opt_val,
+    socklen_t *opt_len);
+int ngx_setsockopt(int s, int level, int opt_name, const void *opt_val,
+    socklen_t opt_len);
+
+ssize_t ngx_sendto(int s, const void *buf, size_t len, int flags,
+    const struct sockaddr *addr, socklen_t addr_len);
+ssize_t ngx_recvfrom(int s, void *buf, size_t len, int flags,
+    struct sockaddr *addr, socklen_t *addr_len);
+#endif
 
 int ngx_nonblocking(ngx_socket_t s);
 int ngx_blocking(ngx_socket_t s);
@@ -35,11 +75,21 @@ int ngx_blocking(ngx_socket_t s);
 #define ngx_nonblocking_n   "ioctlsocket(FIONBIO)"
 #define ngx_blocking_n      "ioctlsocket(!FIONBIO)"
 
+#if !(NGX_UDT)
 #define ngx_shutdown_socket    shutdown
 #define ngx_shutdown_socket_n  "shutdown()"
+#else
+int ngx_shutdown_socket(int s, int how);
+#define ngx_shutdown_socket_n  "ngx_shutdown_socket()"
+#endif
 
+#if !(NGX_UDT)
 #define ngx_close_socket    closesocket
 #define ngx_close_socket_n  "closesocket()"
+#else
+int ngx_close_socket(int s);
+#define ngx_close_socket_n  "ngx_close_socket()"
+#endif
 
 
 #ifndef WSAID_ACCEPTEX

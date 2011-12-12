@@ -359,7 +359,12 @@ ngx_mail_optimize_servers(ngx_conf_t *cf, ngx_array_t *ports)
                 continue;
             }
 
+#if (NGX_UDT)
+            ls = ngx_create_listening(cf, SOCK_STREAM, addr[i].sockaddr,
+                                      addr[i].socklen);
+#else
             ls = ngx_create_listening(cf, addr[i].sockaddr, addr[i].socklen);
+#endif
             if (ls == NULL) {
                 return NGX_CONF_ERROR;
             }

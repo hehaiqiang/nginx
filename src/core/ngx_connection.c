@@ -15,8 +15,14 @@ ngx_os_io_t  ngx_io;
 static void ngx_drain_connections(void);
 
 
+#if (NGX_UDT)
+ngx_listening_t *
+ngx_create_listening(ngx_conf_t *cf, int type, void *sockaddr,
+    socklen_t socklen)
+#else
 ngx_listening_t *
 ngx_create_listening(ngx_conf_t *cf, void *sockaddr, socklen_t socklen)
+#endif
 {
     size_t            len;
     ngx_listening_t  *ls;
@@ -71,7 +77,11 @@ ngx_create_listening(ngx_conf_t *cf, void *sockaddr, socklen_t socklen)
     ngx_memcpy(ls->addr_text.data, text, len);
 
     ls->fd = (ngx_socket_t) -1;
+#if (NGX_UDT)
+    ls->type = type;
+#else
     ls->type = SOCK_STREAM;
+#endif
 
     ls->backlog = NGX_LISTEN_BACKLOG;
     ls->rcvbuf = -1;
@@ -316,13 +326,24 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
                 return NGX_ERROR;
             }
 
+#if (NGX_UDT)
+            if (ngx_setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
+                               (const void *) &reuseaddr, sizeof(int))
+#else
             if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
                            (const void *) &reuseaddr, sizeof(int))
+#endif
                 == -1)
             {
+#if (NGX_UDT)
+                ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
+                              "ngx_setsockopt(SO_REUSEADDR) %V failed",
+                              &ls[i].addr_text);
+#else
                 ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
                               "setsockopt(SO_REUSEADDR) %V failed",
                               &ls[i].addr_text);
+#endif
 
                 if (ngx_close_socket(s) == -1) {
                     ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
@@ -340,12 +361,22 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
 
                 ipv6only = (ls[i].ipv6only == 1);
 
+#if (NGX_UDT)
+                if (ngx_setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY,
+                                   (const void *) &ipv6only, sizeof(int))
+#else
                 if (setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY,
                                (const void *) &ipv6only, sizeof(int))
+#endif
                     == -1)
                 {
                     ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
+#if (NGX_UDT)
+                                  "ngx_setsockopt(IPV6_V6ONLY) "
+                                  "%V failed, ignored",
+#else
                                   "setsockopt(IPV6_V6ONLY) %V failed, ignored",
+#endif
                                   &ls[i].addr_text);
                 }
             }
@@ -368,18 +399,32 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
                 }
             }
 
+#if (NGX_UDT)
+            ngx_log_debug2(NGX_LOG_DEBUG_CORE, log, 0,
+                           "ngx_bind() %V #%d ", &ls[i].addr_text, s);
+#else
             ngx_log_debug2(NGX_LOG_DEBUG_CORE, log, 0,
                            "bind() %V #%d ", &ls[i].addr_text, s);
+#endif
 
+#if (NGX_UDT)
+            if (ngx_bind(s, ls[i].sockaddr, ls[i].socklen) == -1) {
+#else
             if (bind(s, ls[i].sockaddr, ls[i].socklen) == -1) {
+#endif
                 err = ngx_socket_errno;
 
                 if (err == NGX_EADDRINUSE && ngx_test_config) {
                     continue;
                 }
 
+#if (NGX_UDT)
+                ngx_log_error(NGX_LOG_EMERG, log, err,
+                              "ngx_bind() to %V failed", &ls[i].addr_text);
+#else
                 ngx_log_error(NGX_LOG_EMERG, log, err,
                               "bind() to %V failed", &ls[i].addr_text);
+#endif
 
                 if (ngx_close_socket(s) == -1) {
                     ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
@@ -419,11 +464,21 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
             }
 #endif
 
-            if (ls[i].type == SOCK_STREAM) {
+            if (ls[i].type != SOCK_DGRAM) {
+#if (NGX_UDT)
+                if (ngx_listen(s, ls[i].backlog) == -1) {
+#else
                 if (listen(s, ls[i].backlog) == -1) {
+#endif
+#if (NGX_UDT)
+                    ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
+                                  "ngx_listen() to %V, backlog %d failed",
+                                  &ls[i].addr_text, ls[i].backlog);
+#else
                     ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
                                   "listen() to %V, backlog %d failed",
                                   &ls[i].addr_text, ls[i].backlog);
+#endif
 
                     if (ngx_close_socket(s) == -1) {
                         ngx_log_error(NGX_LOG_EMERG, log, ngx_socket_errno,
@@ -446,14 +501,23 @@ ngx_open_listening_sockets(ngx_cycle_t *cycle)
 
         /* TODO: delay configurable */
 
+#if (NGX_UDT)
+        ngx_log_error(NGX_LOG_NOTICE, log, 0,
+                      "try again to ngx_bind() after 500ms");
+#else
         ngx_log_error(NGX_LOG_NOTICE, log, 0,
                       "try again to bind() after 500ms");
+#endif
 
         ngx_msleep(500);
     }
 
     if (failed) {
+#if (NGX_UDT)
+        ngx_log_error(NGX_LOG_EMERG, log, 0, "still could not ngx_bind()");
+#else
         ngx_log_error(NGX_LOG_EMERG, log, 0, "still could not bind()");
+#endif
         return NGX_ERROR;
     }
 
@@ -480,35 +544,69 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
         ls[i].log = *ls[i].logp;
 
         if (ls[i].rcvbuf != -1) {
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, SOL_SOCKET, SO_RCVBUF,
+                               (const void *) &ls[i].rcvbuf, sizeof(int))
+#else
             if (setsockopt(ls[i].fd, SOL_SOCKET, SO_RCVBUF,
                            (const void *) &ls[i].rcvbuf, sizeof(int))
+#endif
                 == -1)
             {
+#if (NGX_UDT)
+                ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
+                              "ngx_setsockopt(SO_RCVBUF, %d) "
+                              "%V failed, ignored",
+                              ls[i].rcvbuf, &ls[i].addr_text);
+#else
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
                               "setsockopt(SO_RCVBUF, %d) %V failed, ignored",
                               ls[i].rcvbuf, &ls[i].addr_text);
+#endif
             }
         }
 
         if (ls[i].sndbuf != -1) {
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, SOL_SOCKET, SO_SNDBUF,
+                               (const void *) &ls[i].sndbuf, sizeof(int))
+#else
             if (setsockopt(ls[i].fd, SOL_SOCKET, SO_SNDBUF,
                            (const void *) &ls[i].sndbuf, sizeof(int))
+#endif
                 == -1)
             {
+#if (NGX_UDT)
+                ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
+                              "ngx_setsockopt(SO_SNDBUF, %d) "
+                              "%V failed, ignored",
+                              ls[i].sndbuf, &ls[i].addr_text);
+#else
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
                               "setsockopt(SO_SNDBUF, %d) %V failed, ignored",
                               ls[i].sndbuf, &ls[i].addr_text);
+#endif
             }
         }
 
 #if (NGX_HAVE_SETFIB)
         if (ls[i].setfib != -1) {
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, SOL_SOCKET, SO_SETFIB,
+                               (const void *) &ls[i].setfib, sizeof(int))
+#else
             if (setsockopt(ls[i].fd, SOL_SOCKET, SO_SETFIB,
                            (const void *) &ls[i].setfib, sizeof(int))
+#endif
                 == -1)
             {
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
+#if (NGX_UDT)
+                              "ngx_setsockopt(SO_SETFIB, %d) "
+                              "%V failed, ignored",
+#else
                               "setsockopt(SO_SETFIB, %d) %V failed, ignored",
+#endif
                               ls[i].setfib, &ls[i].addr_text);
             }
         }
@@ -529,14 +627,28 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
         }
 #endif
 
-        if (ls[i].type == SOCK_STREAM && ls[i].listen) {
+        if (ls[i].type != SOCK_DGRAM && ls[i].listen) {
 
+#if (NGX_UDT)
+            /* change backlog via ngx_listen() */
+#else
             /* change backlog via listen() */
+#endif
 
+#if (NGX_UDT)
+            if (ngx_listen(ls[i].fd, ls[i].backlog) == -1) {
+#else
             if (listen(ls[i].fd, ls[i].backlog) == -1) {
+#endif
+#if (NGX_UDT)
+                ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
+                              "ngx_listen() to %V, backlog %d failed, ignored",
+                              &ls[i].addr_text, ls[i].backlog);
+#else
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_socket_errno,
                               "listen() to %V, backlog %d failed, ignored",
                               &ls[i].addr_text, ls[i].backlog);
+#endif
             }
         }
 
@@ -550,12 +662,21 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
 #ifdef SO_ACCEPTFILTER
 
         if (ls[i].delete_deferred) {
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, SOL_SOCKET, SO_ACCEPTFILTER, NULL, 0)
+#else
             if (setsockopt(ls[i].fd, SOL_SOCKET, SO_ACCEPTFILTER, NULL, 0)
+#endif
                 == -1)
             {
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+#if (NGX_UDT)
+                              "ngx_setsockopt(SO_ACCEPTFILTER, NULL) "
+                              "for %V failed, ignored",
+#else
                               "setsockopt(SO_ACCEPTFILTER, NULL) "
                               "for %V failed, ignored",
+#endif
                               &ls[i].addr_text);
 
                 if (ls[i].accept_filter) {
@@ -576,13 +697,23 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
             (void) ngx_cpystrn((u_char *) af.af_name,
                                (u_char *) ls[i].accept_filter, 16);
 
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, SOL_SOCKET, SO_ACCEPTFILTER,
+                               &af, sizeof(struct accept_filter_arg))
+#else
             if (setsockopt(ls[i].fd, SOL_SOCKET, SO_ACCEPTFILTER,
                            &af, sizeof(struct accept_filter_arg))
+#endif
                 == -1)
             {
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+#if (NGX_UDT)
+                              "ngx_setsockopt(SO_ACCEPTFILTER, \"%s\") "
+                              "for %V failed, ignored",
+#else
                               "setsockopt(SO_ACCEPTFILTER, \"%s\") "
                               "for %V failed, ignored",
+#endif
                               ls[i].accept_filter, &ls[i].addr_text);
                 continue;
             }
@@ -603,13 +734,23 @@ ngx_configure_listening_sockets(ngx_cycle_t *cycle)
                 timeout = 0;
             }
 
+#if (NGX_UDT)
+            if (ngx_setsockopt(ls[i].fd, IPPROTO_TCP, TCP_DEFER_ACCEPT,
+                               &timeout, sizeof(int))
+#else
             if (setsockopt(ls[i].fd, IPPROTO_TCP, TCP_DEFER_ACCEPT,
                            &timeout, sizeof(int))
+#endif
                 == -1)
             {
                 ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+#if (NGX_UDT)
+                              "ngx_setsockopt(TCP_DEFER_ACCEPT, %d) "
+                              "for %V failed, ignored",
+#else
                               "setsockopt(TCP_DEFER_ACCEPT, %d) for %V failed, "
                               "ignored",
+#endif
                               timeout, &ls[i].addr_text);
 
                 continue;
@@ -993,8 +1134,14 @@ ngx_connection_local_sockaddr(ngx_connection_t *c, ngx_str_t *s,
 
         len = NGX_SOCKADDRLEN;
 
+#if (NGX_UDT)
+        if (ngx_getsockname(c->fd, (struct sockaddr *) &sa, &len) == -1) {
+            ngx_connection_error(c, ngx_socket_errno,
+                                 "ngx_getsockname() failed");
+#else
         if (getsockname(c->fd, (struct sockaddr *) &sa, &len) == -1) {
             ngx_connection_error(c, ngx_socket_errno, "getsockname() failed");
+#endif
             return NGX_ERROR;
         }
 

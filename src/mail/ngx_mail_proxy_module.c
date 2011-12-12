@@ -140,6 +140,9 @@ ngx_mail_proxy_init(ngx_mail_session_t *s, ngx_addr_t *peer)
 
     s->proxy = p;
 
+#if (NGX_UDT)
+    p->upstream.type = SOCK_STREAM;
+#endif
     p->upstream.sockaddr = peer->sockaddr;
     p->upstream.socklen = peer->socklen;
     p->upstream.name = &peer->name;

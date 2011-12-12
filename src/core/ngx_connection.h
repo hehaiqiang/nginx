@@ -176,8 +176,13 @@ struct ngx_connection_s {
 };
 
 
+#if (NGX_UDT)
+ngx_listening_t *ngx_create_listening(ngx_conf_t *cf, int type, void *sockaddr,
+    socklen_t socklen);
+#else
 ngx_listening_t *ngx_create_listening(ngx_conf_t *cf, void *sockaddr,
     socklen_t socklen);
+#endif
 ngx_int_t ngx_set_inherited_sockets(ngx_cycle_t *cycle);
 ngx_int_t ngx_open_listening_sockets(ngx_cycle_t *cycle);
 void ngx_configure_listening_sockets(ngx_cycle_t *cycle);

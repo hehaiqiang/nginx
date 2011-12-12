@@ -26,7 +26,11 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
         return rc;
     }
 
+#if (NGX_UDT)
+    s = ngx_socket(pc->sockaddr->sa_family, pc->type, 0);
+#else
     s = ngx_socket(pc->sockaddr->sa_family, SOCK_STREAM, 0);
+#endif
 
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT, pc->log, 0, "socket %d", s);
 
@@ -49,11 +53,21 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
     }
 
     if (pc->rcvbuf) {
+#if (NGX_UDT)
+        if (ngx_setsockopt(s, SOL_SOCKET, SO_RCVBUF,
+                           (const void *) &pc->rcvbuf, sizeof(int)) == -1)
+#else
         if (setsockopt(s, SOL_SOCKET, SO_RCVBUF,
                        (const void *) &pc->rcvbuf, sizeof(int)) == -1)
+#endif
         {
+#if (NGX_UDT)
+            ngx_log_error(NGX_LOG_ALERT, pc->log, ngx_socket_errno,
+                          "ngx_setsockopt(SO_RCVBUF) failed");
+#else
             ngx_log_error(NGX_LOG_ALERT, pc->log, ngx_socket_errno,
                           "setsockopt(SO_RCVBUF) failed");
+#endif
             goto failed;
         }
     }
@@ -76,9 +90,15 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 #endif
 
     if (pc->local) {
+#if (NGX_UDT)
+        if (ngx_bind(s, pc->local->sockaddr, pc->local->socklen) == -1) {
+            ngx_log_error(NGX_LOG_CRIT, pc->log, ngx_socket_errno,
+                          "ngx_bind(%V) failed", &pc->local->name);
+#else
         if (bind(s, pc->local->sockaddr, pc->local->socklen) == -1) {
             ngx_log_error(NGX_LOG_CRIT, pc->log, ngx_socket_errno,
                           "bind(%V) failed", &pc->local->name);
+#endif
 
             goto failed;
         }
@@ -140,17 +160,31 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
                            (OVERLAPPED *) &wev->ovlp) != 0 ? 0 : -1;
 
     } else {
+#if (NGX_UDT)
+        rc = ngx_connect(s, pc->sockaddr, pc->socklen);
+
+        rc = -1;
+#else
         rc = connect(s, pc->sockaddr, pc->socklen);
+#endif
     }
 
 #else
 
+#if (NGX_UDT)
+    rc = ngx_connect(s, pc->sockaddr, pc->socklen);
+#else
     rc = connect(s, pc->sockaddr, pc->socklen);
+#endif
 
 #endif
 
     if (rc == -1) {
+#if (NGX_UDT)
+        err = NGX_EINPROGRESS;
+#else
         err = ngx_socket_errno;
+#endif
 
 
         if (err != NGX_EINPROGRESS

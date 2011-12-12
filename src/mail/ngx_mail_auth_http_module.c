@@ -184,6 +184,9 @@ ngx_mail_auth_http_init(ngx_mail_session_t *s)
 
     ngx_mail_set_ctx(s, ctx, ngx_mail_auth_http_module);
 
+#if (NGX_UDT)
+    ctx->peer.type = SOCK_STREAM;
+#endif
     ctx->peer.sockaddr = ahcf->peer->sockaddr;
     ctx->peer.socklen = ahcf->peer->socklen;
     ctx->peer.name = &ahcf->peer->name;

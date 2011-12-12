@@ -56,12 +56,22 @@ ngx_event_udp_recv(ngx_event_t *ev)
 
     event.socklen = NGX_SOCKADDRLEN;
 
+#if (NGX_UDT)
+    n = ngx_recvfrom(lc->fd, (char *) buf, size, 0,
+                     (struct sockaddr *) event.sockaddr, &event.socklen);
+#else
     n = recvfrom(lc->fd, (char *) buf, size, 0,
                  (struct sockaddr *) event.sockaddr, &event.socklen);
+#endif
 
     if (n == -1) {
+#if (NGX_UDT)
+        ngx_log_error(NGX_LOG_ALERT, ev->log, ngx_socket_errno,
+                      "ngx_recvfrom() failed");
+#else
         ngx_log_error(NGX_LOG_ALERT, ev->log, ngx_socket_errno,
                       "recvfrom() failed");
+#endif
         ngx_destroy_pool(event.pool);
         return;
     }

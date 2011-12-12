@@ -2230,13 +2230,22 @@ ngx_udp_connect(ngx_udp_connection_t *uc)
     ngx_log_debug3(NGX_LOG_DEBUG_EVENT, &uc->log, 0,
                    "connect to %V, fd:%d #%d", &uc->server, s, c->number);
 
+#if (NGX_UDT)
+    rc = ngx_connect(s, uc->sockaddr, uc->socklen);
+#else
     rc = connect(s, uc->sockaddr, uc->socklen);
+#endif
 
     /* TODO: aio, iocp */
 
     if (rc == -1) {
+#if (NGX_UDT)
+        ngx_log_error(NGX_LOG_CRIT, &uc->log, ngx_socket_errno,
+                      "ngx_connect() failed");
+#else
         ngx_log_error(NGX_LOG_CRIT, &uc->log, ngx_socket_errno,
                       "connect() failed");
+#endif
 
         return NGX_ERROR;
     }

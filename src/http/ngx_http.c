@@ -1726,7 +1726,12 @@ ngx_http_add_listening(ngx_conf_t *cf, ngx_http_conf_addr_t *addr)
     ngx_http_core_loc_conf_t  *clcf;
     ngx_http_core_srv_conf_t  *cscf;
 
+#if (NGX_UDT)
+    ls = ngx_create_listening(cf, SOCK_STREAM, &addr->opt.u.sockaddr,
+                              addr->opt.socklen);
+#else
     ls = ngx_create_listening(cf, &addr->opt.u.sockaddr, addr->opt.socklen);
+#endif
     if (ls == NULL) {
         return NULL;
     }

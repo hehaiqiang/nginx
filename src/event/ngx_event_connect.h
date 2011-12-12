@@ -36,6 +36,10 @@ typedef void (*ngx_event_save_peer_session_pt)(ngx_peer_connection_t *pc,
 struct ngx_peer_connection_s {
     ngx_connection_t                *connection;
 
+#if (NGX_UDT)
+    int                              type;
+#endif
+
     struct sockaddr                 *sockaddr;
     socklen_t                        socklen;
     ngx_str_t                       *name;

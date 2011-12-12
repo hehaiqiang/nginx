@@ -300,8 +300,16 @@ ngx_select_process_events(ngx_cycle_t *cycle, ngx_msec_t timer,
     nready = 0;
 
     for (i = 0; i < nevents; i++) {
+#if (NGX_UDT)
+        ngx_os_socket_t  *os;
+#endif
+
         ev = event_index[i];
         c = ev->data;
+#if (NGX_UDT)
+        os = (ngx_os_socket_t *) c->fd;
+        c->fd = os->fd;
+#endif
         found = 0;
 
         if (ev->write) {
@@ -328,6 +336,10 @@ ngx_select_process_events(ngx_cycle_t *cycle, ngx_msec_t timer,
 
             nready++;
         }
+
+#if (NGX_UDT)
+        c->fd = (ngx_socket_t) os;
+#endif
     }
 
     ngx_mutex_unlock(ngx_posted_events_mutex);

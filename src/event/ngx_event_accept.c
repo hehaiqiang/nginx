@@ -57,7 +57,11 @@ ngx_event_accept(ngx_event_t *ev)
             s = accept(lc->fd, (struct sockaddr *) sa, &socklen);
         }
 #else
+#if (NGX_UDT)
+        s = ngx_accept(lc->fd, (struct sockaddr *) sa, &socklen);
+#else
         s = accept(lc->fd, (struct sockaddr *) sa, &socklen);
+#endif
 #endif
 
         if (s == -1) {

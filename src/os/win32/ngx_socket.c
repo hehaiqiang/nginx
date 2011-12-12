@@ -8,6 +8,7 @@
 #include <ngx_core.h>
 
 
+#if !(NGX_UDT)
 int
 ngx_nonblocking(ngx_socket_t s)
 {
@@ -28,6 +29,7 @@ ngx_blocking(ngx_socket_t s)
 
     return ioctlsocket(s, FIONBIO, &nb);
 }
+#endif
 
 
 int
