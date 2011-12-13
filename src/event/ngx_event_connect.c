@@ -160,10 +160,13 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
                            (OVERLAPPED *) &wev->ovlp) != 0 ? 0 : -1;
 
     } else {
+
 #if (NGX_UDT)
         rc = ngx_connect(s, pc->sockaddr, pc->socklen);
 
-        rc = -1;
+        if (rc == 0) {
+            rc = -1;
+        }
 #else
         rc = connect(s, pc->sockaddr, pc->socklen);
 #endif
@@ -173,6 +176,10 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 
 #if (NGX_UDT)
     rc = ngx_connect(s, pc->sockaddr, pc->socklen);
+
+    if (rc == 0) {
+        rc = -1;
+    }
 #else
     rc = connect(s, pc->sockaddr, pc->socklen);
 #endif
@@ -181,6 +188,7 @@ ngx_event_connect_peer(ngx_peer_connection_t *pc)
 
     if (rc == -1) {
 #if (NGX_UDT)
+        /* TODO */
         err = NGX_EINPROGRESS;
 #else
         err = ngx_socket_errno;
