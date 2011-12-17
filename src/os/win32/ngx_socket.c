@@ -29,7 +29,6 @@ ngx_blocking(ngx_socket_t s)
 
     return ioctlsocket(s, FIONBIO, &nb);
 }
-#endif
 
 
 int
@@ -37,3 +36,4 @@ ngx_tcp_push(ngx_socket_t s)
 {
     return 0;
 }
+#endif

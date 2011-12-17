@@ -8,6 +8,8 @@
 #include <ngx_core.h>
 
 
+#if !(NGX_UDT)
+
 /*
  * ioctl(FIONBIO) sets a non-blocking mode with the single syscall
  * while fcntl(F_SETFL, O_NONBLOCK) needs to learn the current state
@@ -111,5 +113,7 @@ ngx_tcp_push(ngx_socket_t s)
 {
     return 0;
 }
+
+#endif
 
 #endif

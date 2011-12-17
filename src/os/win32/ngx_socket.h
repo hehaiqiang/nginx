@@ -72,8 +72,13 @@ ssize_t ngx_recvfrom(int s, void *buf, size_t len, int flags,
 int ngx_nonblocking(ngx_socket_t s);
 int ngx_blocking(ngx_socket_t s);
 
+#if !(NGX_UDT)
 #define ngx_nonblocking_n   "ioctlsocket(FIONBIO)"
 #define ngx_blocking_n      "ioctlsocket(!FIONBIO)"
+#else
+#define ngx_nonblocking_n   "ngx_nonblocking()"
+#define ngx_blocking_n      "ngx_blocking()"
+#endif
 
 #if !(NGX_UDT)
 #define ngx_shutdown_socket    shutdown
@@ -255,7 +260,11 @@ extern LPFN_DISCONNECTEX          ngx_disconnectex;
 
 
 int ngx_tcp_push(ngx_socket_t s);
+#if !(NGX_UDT)
 #define ngx_tcp_push_n            "tcp_push()"
+#else
+#define ngx_tcp_push_n            "ngx_tcp_push()"
+#endif
 
 
 #endif /* _NGX_SOCKET_H_INCLUDED_ */
