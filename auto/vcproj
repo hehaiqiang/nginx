@@ -103,13 +103,14 @@ done
 cat << END                                                    >> $NGX_VCPROJ
 			<Tool Name="VCCLCompilerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalOptions="-W4 -WX -nologo -MT -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS $EXTRA_CFLAGS"
+				AdditionalOptions="-W4 -WX -nologo -MTd -DFD_SETSIZE=1024 -D_CRT_SECURE_NO_WARNINGS $EXTRA_CFLAGS"
 				AdditionalIncludeDirectories="$ngx_incs"
 				AdditionalUsingDirectories="\$(NOINHERIT)"
 				MinimalRebuild="false"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="0"
-                                ProgramDataBaseFileName="../../$NGX_OBJS/$NGINX_BIN.pdb"
+				RuntimeLibrary="1"
+				ProgramDataBaseFileName="../../$NGX_OBJS/$NGINX_BIN.pdb"
 				DebugInformationFormat="3"
 				CompileAs="0"
 				DisableSpecificWarnings="\$(NOINHERIT)"
@@ -285,7 +286,7 @@ cat << END                                                    >> $NGX_VCPROJ
 		<File RelativePath="../../$ngx_modules_c">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VCCLCompilerTool"
-                                        UsePrecompiledHeader="2"
+					UsePrecompiledHeader="2"
 					PrecompiledHeaderThrough="ngx_config.h"
 					PrecompiledHeaderFile="../../$NGX_PCH"
 					ObjectFile="../../$ngx_modules_obj" />
