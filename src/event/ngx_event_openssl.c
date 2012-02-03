@@ -1,6 +1,7 @@
 
 /*
  * Copyright (C) Igor Sysoev
+ * Copyright (C) Nginx, Inc.
  */
 
 
@@ -121,8 +122,6 @@ ngx_ssl_init(ngx_log_t *log)
 
     SSL_library_init();
     SSL_load_error_strings();
-
-    ENGINE_load_builtin_engines();
 
     OpenSSL_add_all_algorithms();
 
